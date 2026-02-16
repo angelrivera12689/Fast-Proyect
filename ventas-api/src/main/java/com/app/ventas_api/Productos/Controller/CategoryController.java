@@ -1,0 +1,133 @@
+package com.app.ventas_api.Productos.Controller;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.app.ventas_api.Productos.DTO.Request.CategoryRequestDto;
+import com.app.ventas_api.Productos.Entity.Category;
+import com.app.ventas_api.Productos.IService.ICategoryService;
+
+/**
+ * PRODUCTOS - Controller
+ * CategoryController
+ */
+@CrossOrigin(origins = "*")
+@RestController
+@RequestMapping("api/categories")
+public class CategoryController {
+    
+    @Autowired
+    private ICategoryService categoryService;
+    
+    @GetMapping
+    public ResponseEntity<List<Category>> findAll() {
+        try {
+            List<Category> categories = categoryService.all();
+            return ResponseEntity.ok(categories);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    @GetMapping("/active")
+    public ResponseEntity<List<Category>> findActive() {
+        try {
+            List<Category> categories = categoryService.findByStateTrue();
+            return ResponseEntity.ok(categories);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    @GetMapping("/{id}")
+    public ResponseEntity<Category> findById(@PathVariable Long id) {
+        try {
+            Optional<Category> category = categoryService.findById(id);
+            return category.map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    @GetMapping("/name/{name}")
+    public ResponseEntity<Category> findByName(@PathVariable String name) {
+        try {
+            Optional<Category> category = categoryService.findByName(name);
+            return category.map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    @GetMapping("/parent/{parentId}")
+    public ResponseEntity<List<Category>> findByParent(@PathVariable Long parentId) {
+        try {
+            List<Category> categories = categoryService.findByParentId(parentId);
+            return ResponseEntity.ok(categories);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    @PostMapping
+    public ResponseEntity<Category> create(@RequestBody CategoryRequestDto request) {
+        try {
+            Category category = Category.builder()
+                    .name(request.getName())
+                    .description(request.getDescription())
+                    .parent(request.getParentId() != null ? 
+                        com.app.ventas_api.Productos.Entity.Category.builder().id(request.getParentId()).build() : null)
+                    .imageUrl(request.getImageUrl())
+                    .active(request.getActive() != null ? request.getActive() : true)
+                    .build();
+            
+            Category saved = categoryService.save(category);
+            return ResponseEntity.ok(saved);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    @PutMapping("/{id}")
+    public ResponseEntity<Category> update(@PathVariable Long id, @RequestBody CategoryRequestDto request) {
+        try {
+            Category category = Category.builder()
+                    .name(request.getName())
+                    .description(request.getDescription())
+                    .parent(request.getParentId() != null ? 
+                        com.app.ventas_api.Productos.Entity.Category.builder().id(request.getParentId()).build() : null)
+                    .imageUrl(request.getImageUrl())
+                    .active(request.getActive())
+                    .build();
+            
+            categoryService.update(id, category);
+            return ResponseEntity.ok(category);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        try {
+            categoryService.delete(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+}
