@@ -2,6 +2,7 @@ package com.app.ventas_api.ventas.domain;
 
 import com.app.ventas_api.Organizacion.Entity.Company;
 import com.app.ventas_api.seguridad.domain.User;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -19,6 +20,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Order {
     
     @Id

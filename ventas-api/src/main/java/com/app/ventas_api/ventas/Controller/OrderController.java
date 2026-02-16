@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.app.ventas_api.ventas.DTO.Request.OrderRequestDto;
@@ -146,5 +147,144 @@ public class OrderController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
+    }
+    
+    // ==================== Endpoints del Carrito ====================
+    
+    /**
+     * Obtener o crear carrito activo del usuario
+     * GET /api/orders/cart?userId=1&companyId=1
+     */
+    @GetMapping("/cart")
+    public ResponseEntity<Order> getOrCreateCart(
+            @RequestParam Long userId, 
+            @RequestParam Long companyId) {
+        try {
+            Order cart = orderService.getOrCreateCart(userId, companyId);
+            return ResponseEntity.ok(cart);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    /**
+     * Obtener carrito activo del usuario (solo lectura)
+     * GET /api/orders/cart/active/{userId}
+     */
+    @GetMapping("/cart/active/{userId}")
+    public ResponseEntity<Order> getActiveCart(@PathVariable Long userId) {
+        try {
+            Optional<Order> cart = orderService.getActiveCart(userId);
+            return cart.map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    /**
+     * Agregar producto al carrito
+     * POST /api/orders/cart/add?userId=1&companyId=1&productId=2&quantity=3
+     */
+    @PostMapping("/cart/add")
+    public ResponseEntity<Order> addToCart(
+            @RequestParam Long userId,
+            @RequestParam Long companyId,
+            @RequestParam Long productId,
+            @RequestParam Integer quantity) {
+        try {
+            Order cart = orderService.addToCart(userId, companyId, productId, quantity);
+            return ResponseEntity.ok(cart);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    /**
+     * Actualizar cantidad de item en el carrito
+     * PUT /api/orders/cart/{cartId}/item/{itemId}?quantity=5
+     */
+    @PutMapping("/cart/{cartId}/item/{itemId}")
+    public ResponseEntity<Order> updateCartItem(
+            @PathVariable Long cartId,
+            @PathVariable Long itemId,
+            @RequestParam Integer quantity) {
+        try {
+            Order cart = orderService.updateCartItem(cartId, itemId, quantity);
+            return ResponseEntity.ok(cart);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    /**
+     * Eliminar item del carrito
+     * DELETE /api/orders/cart/{cartId}/item/{itemId}
+     */
+    @DeleteMapping("/cart/{cartId}/item/{itemId}")
+    public ResponseEntity<Order> removeFromCart(
+            @PathVariable Long cartId,
+            @PathVariable Long itemId) {
+        try {
+            Order cart = orderService.removeFromCart(cartId, itemId);
+            return ResponseEntity.ok(cart);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    /**
+     * Checkout - Convertir carrito a pedido
+     * POST /api/orders/cart/{cartId}/checkout
+     */
+    @PostMapping("/cart/{cartId}/checkout")
+    public ResponseEntity<Order> checkout(
+            @PathVariable Long cartId,
+            @RequestBody CheckoutRequest request) {
+        try {
+            Order order = orderService.checkout(cartId, request.getShippingAddress(), request.getNotes());
+            return ResponseEntity.ok(order);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    /**
+     * Confirmar pago (Webhook)
+     * POST /api/orders/{orderId}/confirm-payment
+     */
+    @PostMapping("/{orderId}/confirm-payment")
+    public ResponseEntity<Order> confirmPayment(@PathVariable Long orderId) {
+        try {
+            Order order = orderService.confirmPayment(orderId);
+            return ResponseEntity.ok(order);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    /**
+     * Cancelar pedido
+     * POST /api/orders/{orderId}/cancel
+     */
+    @PostMapping("/{orderId}/cancel")
+    public ResponseEntity<Order> cancelOrder(@PathVariable Long orderId) {
+        try {
+            Order order = orderService.cancelOrder(orderId);
+            return ResponseEntity.ok(order);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    // DTO para checkout
+    public static class CheckoutRequest {
+        private String shippingAddress;
+        private String notes;
+        
+        public String getShippingAddress() { return shippingAddress; }
+        public void setShippingAddress(String shippingAddress) { this.shippingAddress = shippingAddress; }
+        public String getNotes() { return notes; }
+        public void setNotes(String notes) { this.notes = notes; }
     }
 }

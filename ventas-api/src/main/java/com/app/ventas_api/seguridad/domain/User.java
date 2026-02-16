@@ -3,6 +3,8 @@ package com.app.ventas_api.seguridad.domain;
 import com.app.ventas_api.Organizacion.Entity.Company;
 import jakarta.persistence.*;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -19,6 +21,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class User {
     
     @Id
@@ -27,6 +30,7 @@ public class User {
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id", foreignKey = @ForeignKey(name = "fk_user_company"))
+    @JsonIgnore
     private Company company;
     
     @Column(nullable = false, unique = true)
@@ -78,11 +82,13 @@ public class User {
         inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     @Builder.Default
+    @JsonIgnore
     private Set<Role> roles = new HashSet<>();
     
     // Relación inversa: un usuario puede tener muchos refresh tokens
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
+    @JsonIgnore
     private List<RefreshToken> refreshTokens = new ArrayList<>();
     
     @PrePersist
@@ -96,3 +102,4 @@ public class User {
         updatedAt = LocalDateTime.now();
     }
 }
+

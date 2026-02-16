@@ -1,6 +1,8 @@
 package com.app.ventas_api.Organizacion.Entity;
 
 import com.app.ventas_api.seguridad.domain.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -17,6 +19,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Company {
     
     @Id
@@ -52,6 +55,7 @@ public class Company {
     // Relación inversa: una compañía puede tener muchos usuarios
     @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
     @Builder.Default
+    @JsonIgnore
     private List<User> users = new ArrayList<>();
     
     @PrePersist

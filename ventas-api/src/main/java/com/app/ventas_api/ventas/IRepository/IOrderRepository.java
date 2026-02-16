@@ -22,4 +22,9 @@ public interface IOrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByStatus(Order.OrderStatus status);
     
     Optional<Order> findByCompany_IdAndId(Long companyId, Long id);
+    
+    // Métodos para carrito
+    Optional<Order> findByUser_IdAndStatus(Long userId, Order.OrderStatus status);
+    
+    Optional<Order> findByCompany_IdAndStatus(Long companyId, Order.OrderStatus status);
 }
