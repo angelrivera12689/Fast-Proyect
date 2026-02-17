@@ -30,4 +30,9 @@ public interface ICategoryService {
     List<Category> findByActive(Boolean active);
     
     List<Category> findByParentId(Long parentId);
+    
+    // Métodos con lógica de negocio encapsulada
+    Category create(String name, String description, Long parentId, String imageUrl, Boolean active) throws Exception;
+    
+    void updateCategory(Long id, String name, String description, Long parentId, String imageUrl, Boolean active) throws Exception;
 }

@@ -13,6 +13,7 @@ import com.app.ventas_api.Productos.Entity.Product;
 import com.app.ventas_api.Productos.IRepository.ICategoryRepository;
 import com.app.ventas_api.Productos.IRepository.IProductRepository;
 import com.app.ventas_api.Productos.IService.IProductService;
+import com.app.ventas_api.config.exception.ResourceNotFoundException;
 
 /**
  * PRODUCTOS - Service
@@ -46,7 +47,7 @@ public class ProductService implements IProductService {
     public Optional<Product> findById(Long id) throws Exception {
         Optional<Product> op = repository.findById(id);
         if (op.isEmpty()) {
-            throw new Exception("Product not found");
+            throw new ResourceNotFoundException("Product", "id", id);
         }
         return op;
     }
@@ -57,12 +58,14 @@ public class ProductService implements IProductService {
             // Fetch and set Category entity
             if (entity.getCategory() != null && entity.getCategory().getId() != null) {
                 entity.setCategory(categoryRepository.findById(entity.getCategory().getId())
-                        .orElseThrow(() -> new Exception("Category not found")));
+                        .orElseThrow(() -> new ResourceNotFoundException("Category", "id", entity.getCategory().getId())));
             }
             if (entity.getActive() == null) {
                 entity.setActive(true);
             }
             return repository.save(entity);
+        } catch (ResourceNotFoundException e) {
+            throw e;
         } catch (Exception e) {
             throw new Exception("Error saving product: " + e.getMessage());
         }
@@ -72,7 +75,7 @@ public class ProductService implements IProductService {
     public void update(Long id, Product entity) throws Exception {
         Optional<Product> op = repository.findById(id);
         if (op.isEmpty()) {
-            throw new Exception("Product not found");
+            throw new ResourceNotFoundException("Product", "id", id);
         }
         
         Product entityUpdate = op.get();
@@ -97,7 +100,7 @@ public class ProductService implements IProductService {
     public void delete(Long id) throws Exception {
         Optional<Product> op = repository.findById(id);
         if (op.isEmpty()) {
-            throw new Exception("Product not found");
+            throw new ResourceNotFoundException("Product", "id", id);
         }
         
         Product entityUpdate = op.get();

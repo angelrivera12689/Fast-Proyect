@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.app.ventas_api.Productos.Entity.Category;
 import com.app.ventas_api.Productos.IRepository.ICategoryRepository;
 import com.app.ventas_api.Productos.IService.ICategoryService;
+import com.app.ventas_api.config.exception.ResourceNotFoundException;
 
 /**
  * PRODUCTOS - Service
@@ -34,7 +35,7 @@ public class CategoryService implements ICategoryService {
     public Optional<Category> findById(Long id) throws Exception {
         Optional<Category> op = repository.findById(id);
         if (op.isEmpty()) {
-            throw new Exception("Category not found");
+            throw new ResourceNotFoundException("Category", "id", id);
         }
         return op;
     }
@@ -51,6 +52,8 @@ public class CategoryService implements ICategoryService {
                 entity.setActive(true);
             }
             return repository.save(entity);
+        } catch (ResourceNotFoundException e) {
+            throw e;
         } catch (Exception e) {
             throw new Exception("Error saving category: " + e.getMessage());
         }
@@ -60,7 +63,7 @@ public class CategoryService implements ICategoryService {
     public void update(Long id, Category entity) throws Exception {
         Optional<Category> op = repository.findById(id);
         if (op.isEmpty()) {
-            throw new Exception("Category not found");
+            throw new ResourceNotFoundException("Category", "id", id);
         }
         
         Category entityUpdate = op.get();
@@ -79,7 +82,7 @@ public class CategoryService implements ICategoryService {
     public void delete(Long id) throws Exception {
         Optional<Category> op = repository.findById(id);
         if (op.isEmpty()) {
-            throw new Exception("Category not found");
+            throw new ResourceNotFoundException("Category", "id", id);
         }
         
         Category entityUpdate = op.get();
@@ -105,5 +108,49 @@ public class CategoryService implements ICategoryService {
     @Override
     public List<Category> findByParentId(Long parentId) {
         return repository.findByParent_Id(parentId);
+    }
+    
+    // Métodos con lógica de negocio encapsulada
+    @Override
+    public Category create(String name, String description, Long parentId, String imageUrl, Boolean active) throws Exception {
+        Category category = Category.builder()
+                .name(name)
+                .description(description)
+                .imageUrl(imageUrl)
+                .active(active != null ? active : true)
+                .build();
+        
+        // Buscar y asignar categoría padre real desde BD
+        if (parentId != null) {
+            Category parent = repository.findById(parentId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Category", "id", parentId));
+            category.setParent(parent);
+        }
+        
+        return repository.save(category);
+    }
+    
+    @Override
+    public void updateCategory(Long id, String name, String description, Long parentId, String imageUrl, Boolean active) throws Exception {
+        Category existing = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Category", "id", id));
+        
+        existing.setName(name);
+        existing.setDescription(description);
+        existing.setImageUrl(imageUrl);
+        if (active != null) {
+            existing.setActive(active);
+        }
+        
+        // Buscar y asignar categoría padre real desde BD
+        if (parentId != null) {
+            Category parent = repository.findById(parentId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Category", "id", parentId));
+            existing.setParent(parent);
+        } else {
+            existing.setParent(null);
+        }
+        
+        repository.save(existing);
     }
 }

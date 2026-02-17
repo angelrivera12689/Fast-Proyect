@@ -5,7 +5,9 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.app.ventas_api.Productos.Entity.Product;
 import com.app.ventas_api.Productos.IRepository.IProductRepository;
 import com.app.ventas_api.ventas.domain.Order;
 import com.app.ventas_api.ventas.domain.OrderItem;
@@ -16,6 +18,9 @@ import com.app.ventas_api.ventas.IService.IOrderItemService;
 /**
  * VENTAS - Service
  * Implementation: OrderItemService
+ * 
+ * SEGURIDAD DE TRANSACCIONES: Este servicio maneja la reducción de stock
+ * de forma atómica para prevenir race conditions.
  */
 @Service
 public class OrderItemService implements IOrderItemService {
@@ -44,6 +49,7 @@ public class OrderItemService implements IOrderItemService {
     }
     
     @Override
+    @Transactional
     public OrderItem save(OrderItem entity) throws Exception {
         try {
             // Fetch Order entity
@@ -51,11 +57,31 @@ public class OrderItemService implements IOrderItemService {
                 entity.setOrder(orderRepository.findById(entity.getOrder().getId())
                         .orElseThrow(() -> new Exception("Order not found")));
             }
-            // Fetch Product entity
+            
+            // ========== RACE CONDITION PROTECTION ==========
+            // Usar pessimistic lock para evitar race conditions en stock
             if (entity.getProduct() != null && entity.getProduct().getId() != null) {
-                entity.setProduct(productRepository.findById(entity.getProduct().getId())
-                        .orElseThrow(() -> new Exception("Product not found")));
+                Long productId = entity.getProduct().getId();
+                Integer quantity = entity.getQuantity();
+                
+                // 1. Obtener producto con lock (bloquea la fila)
+                Product product = productRepository.findByIdWithLock(productId)
+                        .orElseThrow(() -> new Exception("Product not found"));
+                
+                // 2. Verificar stock disponible
+                if (product.getStock() < quantity) {
+                    throw new Exception("Stock insuficiente. Disponible: " + product.getStock() + ", Solicitado: " + quantity);
+                }
+                
+                // 3. Reducir stock
+                product.setStock(product.getStock() - quantity);
+                productRepository.save(product);
+                
+                // 4. Guardar referencia del producto (no crear nuevo)
+                entity.setProduct(product);
             }
+            // =================================================
+            
             return repository.save(entity);
         } catch (Exception e) {
             throw new Exception("Error saving order item: " + e.getMessage());
@@ -63,6 +89,7 @@ public class OrderItemService implements IOrderItemService {
     }
     
     @Override
+    @Transactional
     public void update(Long id, OrderItem entity) throws Exception {
         Optional<OrderItem> op = repository.findById(id);
         if (op.isEmpty()) {
@@ -82,10 +109,19 @@ public class OrderItemService implements IOrderItemService {
     }
     
     @Override
+    @Transactional
     public void delete(Long id) throws Exception {
         Optional<OrderItem> op = repository.findById(id);
         if (op.isEmpty()) {
             throw new Exception("OrderItem not found");
+        }
+        
+        // Restaurar stock al eliminar item
+        OrderItem item = op.get();
+        if (item.getProduct() != null && item.getQuantity() != null) {
+            Product product = item.getProduct();
+            product.setStock(product.getStock() + item.getQuantity());
+            productRepository.save(product);
         }
         
         repository.delete(op.get());

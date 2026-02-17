@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+
 import com.app.ventas_api.Productos.Entity.ProductImage;
 import com.app.ventas_api.Productos.Entity.Product;
 import com.app.ventas_api.Productos.IService.IProductImageService;
@@ -72,7 +74,7 @@ public class ProductImageController {
     
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ProductImage> create(@RequestBody ProductImageRequest request) {
+    public ResponseEntity<ProductImage> create(@Valid @RequestBody ProductImageRequest request) {
         try {
             Product product = productRepository.findById(request.getProductId())
                     .orElseThrow(() -> new RuntimeException("Product not found"));
@@ -94,7 +96,7 @@ public class ProductImageController {
     
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ProductImage> update(@PathVariable Long id, @RequestBody ProductImageRequest request) {
+    public ResponseEntity<ProductImage> update(@PathVariable Long id, @Valid @RequestBody ProductImageRequest request) {
         try {
             ProductImage image = ProductImage.builder()
                     .url(request.getUrl())

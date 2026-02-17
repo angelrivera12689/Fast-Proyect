@@ -103,16 +103,8 @@ public class CategoryController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Category> create(@Valid @RequestBody CategoryRequestDto request) {
         try {
-            Category category = Category.builder()
-                    .name(request.getName())
-                    .description(request.getDescription())
-                    .parent(request.getParentId() != null ? 
-                        com.app.ventas_api.Productos.Entity.Category.builder().id(request.getParentId()).build() : null)
-                    .imageUrl(request.getImageUrl())
-                    .active(request.getActive() != null ? request.getActive() : true)
-                    .build();
-            
-            Category saved = categoryService.save(category);
+            Category saved = categoryService.create(request.getName(), request.getDescription(), 
+                request.getParentId(), request.getImageUrl(), request.getActive());
             return ResponseEntity.ok(saved);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
@@ -123,17 +115,9 @@ public class CategoryController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Category> update(@PathVariable Long id, @Valid @RequestBody CategoryRequestDto request) {
         try {
-            Category category = Category.builder()
-                    .name(request.getName())
-                    .description(request.getDescription())
-                    .parent(request.getParentId() != null ? 
-                        com.app.ventas_api.Productos.Entity.Category.builder().id(request.getParentId()).build() : null)
-                    .imageUrl(request.getImageUrl())
-                    .active(request.getActive())
-                    .build();
-            
-            categoryService.update(id, category);
-            return ResponseEntity.ok(category);
+            categoryService.updateCategory(id, request.getName(), request.getDescription(), 
+                request.getParentId(), request.getImageUrl(), request.getActive());
+            return ResponseEntity.ok(categoryService.findById(id).orElse(null));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }

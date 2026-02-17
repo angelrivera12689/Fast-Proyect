@@ -72,6 +72,7 @@ public class OrderService implements IOrderService {
     }
     
     @Override
+    @Transactional
     public void update(Long id, Order entity) throws Exception {
         Optional<Order> op = repository.findById(id);
         if (op.isEmpty()) {
@@ -90,6 +91,7 @@ public class OrderService implements IOrderService {
     }
     
     @Override
+    @Transactional
     public void delete(Long id) throws Exception {
         Optional<Order> op = repository.findById(id);
         if (op.isEmpty()) {

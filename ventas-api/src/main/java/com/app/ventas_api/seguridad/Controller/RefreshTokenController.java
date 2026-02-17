@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+
 import com.app.ventas_api.seguridad.DTO.Request.RefreshTokenRequestDto;
 import com.app.ventas_api.seguridad.domain.RefreshToken;
 import com.app.ventas_api.seguridad.IService.IRefreshTokenService;
@@ -74,7 +76,7 @@ public class RefreshTokenController {
     }
     
     @PostMapping
-    public ResponseEntity<RefreshToken> create(@RequestBody RefreshTokenRequestDto request) {
+    public ResponseEntity<RefreshToken> create(@Valid @RequestBody RefreshTokenRequestDto request) {
         try {
             RefreshToken token = RefreshToken.builder()
                     .user(request.getUserId() != null ? 
@@ -92,7 +94,7 @@ public class RefreshTokenController {
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<RefreshToken> update(@PathVariable Long id, @RequestBody RefreshTokenRequestDto request) {
+    public ResponseEntity<RefreshToken> update(@PathVariable Long id, @Valid @RequestBody RefreshTokenRequestDto request) {
         try {
             RefreshToken token = RefreshToken.builder()
                     .user(request.getUserId() != null ? 

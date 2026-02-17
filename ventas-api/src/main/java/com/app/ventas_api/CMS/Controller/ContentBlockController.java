@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+
 import com.app.ventas_api.CMS.Entity.ContentBlock;
 import com.app.ventas_api.CMS.IService.IContentBlockService;
 
@@ -90,7 +92,7 @@ public class ContentBlockController {
     
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ContentBlock> create(@RequestBody ContentBlockRequest request) {
+    public ResponseEntity<ContentBlock> create(@Valid @RequestBody ContentBlockRequest request) {
         try {
             ContentBlock content = ContentBlock.builder()
                     .section(request.getSection())
@@ -111,7 +113,7 @@ public class ContentBlockController {
     
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ContentBlock> update(@PathVariable Long id, @RequestBody ContentBlockRequest request) {
+    public ResponseEntity<ContentBlock> update(@PathVariable Long id, @Valid @RequestBody ContentBlockRequest request) {
         try {
             ContentBlock content = ContentBlock.builder()
                     .section(request.getSection())
