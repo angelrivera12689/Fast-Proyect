@@ -3,6 +3,9 @@ package com.app.ventas_api.Productos.IService;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import com.app.ventas_api.Productos.Entity.Product;
 
 /**
@@ -12,6 +15,8 @@ import com.app.ventas_api.Productos.Entity.Product;
 public interface IProductService {
     
     List<Product> all() throws Exception;
+    
+    Page<Product> findAll(Pageable pageable) throws Exception;
     
     List<Product> findByStateTrue() throws Exception;
     

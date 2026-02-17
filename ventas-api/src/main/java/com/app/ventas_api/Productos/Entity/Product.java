@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -50,6 +51,31 @@ public class Product {
     private BigDecimal weight;
     
     private String dimensions;
+    
+    // ===== Atributos de Medicamentos =====
+    @Column(name = "laboratory")
+    private String laboratory;  // Laboratorio farmacéutico
+    
+    @Column(name = "registration_number")
+    private String registrationNumber;  // Registro INVIMA
+    
+    @Column(name = "dosage")
+    private String dosage;  // Dosis (ej: 500mg, 10ml)
+    
+    @Column(name = "expiration_date")
+    private LocalDate expirationDate;  // Fecha de vencimiento
+    
+    @Column(name = "active_ingredient")
+    private String activeIngredient;  // Principio activo
+    
+    @Column(name = "presentation")
+    private String presentation;  // Presentación (tableta, jarabe, inyectable)
+    
+    @Column(name = "requires_prescription")
+    @Builder.Default
+    private Boolean requiresPrescription = false;  // Requiere receta
+    
+    // ===== Fin atributos medicamentos =====
     
     @Column(name = "image_url")
     private String imageUrl;

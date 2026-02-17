@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+
 import com.app.ventas_api.seguridad.DTO.Request.RoleRequestDto;
 import com.app.ventas_api.seguridad.domain.Role;
 import com.app.ventas_api.seguridad.IService.IRoleService;
@@ -22,6 +25,8 @@ import com.app.ventas_api.seguridad.IService.IRoleService;
 /**
  * SEGURIDAD - Controller
  * RoleController
+ * 
+ * Roles: Solo ADMIN
  */
 @CrossOrigin(origins = "*")
 @RestController
@@ -31,7 +36,10 @@ public class RoleController {
     @Autowired
     private IRoleService roleService;
     
+    // ===== Todos los métodos requieren rol ADMIN =====
+    
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Role>> findAll() {
         try {
             List<Role> roles = roleService.all();
@@ -42,6 +50,7 @@ public class RoleController {
     }
     
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Role> findById(@PathVariable Long id) {
         try {
             Optional<Role> role = roleService.findById(id);
@@ -53,6 +62,7 @@ public class RoleController {
     }
     
     @GetMapping("/name/{name}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Role> findByName(@PathVariable String name) {
         try {
             Optional<Role> role = roleService.findByName(name);
@@ -64,7 +74,8 @@ public class RoleController {
     }
     
     @PostMapping
-    public ResponseEntity<Role> create(@RequestBody RoleRequestDto request) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Role> create(@Valid @RequestBody RoleRequestDto request) {
         try {
             Role role = Role.builder()
                     .name(request.getName())
@@ -79,7 +90,8 @@ public class RoleController {
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<Role> update(@PathVariable Long id, @RequestBody RoleRequestDto request) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Role> update(@PathVariable Long id, @Valid @RequestBody RoleRequestDto request) {
         try {
             Role role = Role.builder()
                     .name(request.getName())
@@ -94,6 +106,7 @@ public class RoleController {
     }
     
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         try {
             roleService.delete(id);

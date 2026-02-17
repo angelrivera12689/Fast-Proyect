@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.app.ventas_api.Productos.Entity.Category;
@@ -28,6 +30,11 @@ public class ProductService implements IProductService {
     @Override
     public List<Product> all() throws Exception {
         return repository.findAll();
+    }
+    
+    @Override
+    public Page<Product> findAll(Pageable pageable) throws Exception {
+        return repository.findAll(pageable);
     }
     
     @Override

@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+
 import com.app.ventas_api.ventas.DTO.Request.PaymentRequestDto;
 import com.app.ventas_api.ventas.domain.Order;
 import com.app.ventas_api.ventas.domain.Payment;
@@ -89,7 +91,7 @@ public class PaymentController {
     }
     
     @PostMapping
-    public ResponseEntity<Payment> create(@RequestBody PaymentRequestDto request) {
+    public ResponseEntity<Payment> create(@Valid @RequestBody PaymentRequestDto request) {
         try {
             // Fetch the Order entity
             Order order = orderRepository.findById(request.getOrderId())
@@ -113,7 +115,7 @@ public class PaymentController {
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<Payment> update(@PathVariable Long id, @RequestBody PaymentRequestDto request) {
+    public ResponseEntity<Payment> update(@PathVariable Long id, @Valid @RequestBody PaymentRequestDto request) {
         try {
             // Fetch the Order entity
             Order order = orderRepository.findById(request.getOrderId())

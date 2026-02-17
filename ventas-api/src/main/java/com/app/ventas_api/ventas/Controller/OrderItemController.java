@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+
 import com.app.ventas_api.ventas.DTO.Request.OrderItemRequestDto;
 import com.app.ventas_api.ventas.domain.Order;
 import com.app.ventas_api.Productos.Entity.Product;
@@ -83,7 +85,7 @@ public class OrderItemController {
     }
     
     @PostMapping
-    public ResponseEntity<OrderItem> create(@RequestBody OrderItemRequestDto request) {
+    public ResponseEntity<OrderItem> create(@Valid @RequestBody OrderItemRequestDto request) {
         try {
             // Fetch Order and Product entities
             Order order = orderRepository.findById(request.getOrderId()).orElse(null);
@@ -107,7 +109,7 @@ public class OrderItemController {
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<OrderItem> update(@PathVariable Long id, @RequestBody OrderItemRequestDto request) {
+    public ResponseEntity<OrderItem> update(@PathVariable Long id, @Valid @RequestBody OrderItemRequestDto request) {
         try {
             // Fetch Order and Product entities
             Order order = orderRepository.findById(request.getOrderId()).orElse(null);

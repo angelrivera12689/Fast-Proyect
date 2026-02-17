@@ -43,6 +43,9 @@ public class AuthService {
     @Autowired
     private PasswordEncoder passwordEncoder;
     
+    @Autowired
+    private TotpService totpService;
+    
     /**
      * Register new user
      */
@@ -193,6 +196,29 @@ public class AuthService {
         // Verify password
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             throw new RuntimeException("Invalid credentials");
+        }
+        
+        // Check if 2FA is enabled - if so, require 2FA code
+        if (user.getTwoFactorEnabled() != null && user.getTwoFactorEnabled()) {
+            // Check if 2FA code was provided
+            String twoFactorCode = request.getTwoFactorCode();
+            if (twoFactorCode == null || twoFactorCode.isEmpty()) {
+                // Return response indicating 2FA is required
+                return AuthResponseDto.builder()
+                        .token(null)
+                        .refreshToken(null)
+                        .userId(user.getId())
+                        .username(user.getUsername())
+                        .email(user.getEmail())
+                        .message("2FA_REQUIRED")
+                        .twoFactorRequired(true)
+                        .build();
+            }
+            
+            // Validate 2FA code
+            if (user.getTwoFactorSecret() == null || !totpService.validateCode(user.getTwoFactorSecret(), twoFactorCode)) {
+                throw new RuntimeException("Invalid 2FA code");
+            }
         }
         
         // Generate tokens

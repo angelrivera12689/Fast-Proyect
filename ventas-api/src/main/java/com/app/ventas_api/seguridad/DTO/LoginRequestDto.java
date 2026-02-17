@@ -14,4 +14,7 @@ public class LoginRequestDto {
     
     @NotBlank(message = "Password is required")
     private String password;
+    
+    // Código 2FA (opcional)
+    private String twoFactorCode;
 }

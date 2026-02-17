@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.validation.Valid;
 
 import com.app.ventas_api.ventas.DTO.Request.OrderRequestDto;
 import com.app.ventas_api.Organizacion.Entity.Company;
@@ -27,6 +30,10 @@ import com.app.ventas_api.seguridad.IRepository.IUserRepository;
 /**
  * VENTAS - Controller
  * OrderController
+ * 
+ * Roles:
+ * - USER, COMPANY_ADMIN, ADMIN: Ver y gestionar pedidos
+ * - COMPANY_ADMIN, ADMIN: Ver todos los pedidos
  */
 @CrossOrigin(origins = "*")
 @RestController
@@ -42,7 +49,10 @@ public class OrderController {
     @Autowired
     private IUserRepository userRepository;
     
+    // ===== Métodos de lectura - Solo ADMIN =====
+    
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Order>> findAll() {
         try {
             List<Order> orders = orderService.all();
@@ -53,6 +63,7 @@ public class OrderController {
     }
     
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER', 'COMPANY_ADMIN', 'ADMIN')")
     public ResponseEntity<Order> findById(@PathVariable Long id) {
         try {
             Optional<Order> order = orderService.findById(id);
@@ -64,6 +75,7 @@ public class OrderController {
     }
     
     @GetMapping("/company/{companyId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Order>> findByCompany(@PathVariable Long companyId) {
         try {
             List<Order> orders = orderService.findByCompanyId(companyId);
@@ -74,6 +86,7 @@ public class OrderController {
     }
     
     @GetMapping("/user/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Order>> findByUser(@PathVariable Long userId) {
         try {
             List<Order> orders = orderService.findByUserId(userId);
@@ -84,6 +97,7 @@ public class OrderController {
     }
     
     @GetMapping("/status/{status}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Order>> findByStatus(@PathVariable Order.OrderStatus status) {
         try {
             List<Order> orders = orderService.findByStatus(status);
@@ -93,8 +107,11 @@ public class OrderController {
         }
     }
     
+    // ===== Métodos de escritura - USER (comprar), ADMIN (todo) =====
+    
     @PostMapping
-    public ResponseEntity<Order> create(@RequestBody OrderRequestDto request) {
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<Order> create(@Valid @RequestBody OrderRequestDto request) {
         try {
             // Fetch Company and User entities
             Company company = companyRepository.findById(request.getCompanyId()).orElse(null);
@@ -117,7 +134,8 @@ public class OrderController {
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<Order> update(@PathVariable Long id, @RequestBody OrderRequestDto request) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Order> update(@PathVariable Long id, @Valid @RequestBody OrderRequestDto request) {
         try {
             // Fetch Company and User entities
             Company company = companyRepository.findById(request.getCompanyId()).orElse(null);
@@ -140,6 +158,7 @@ public class OrderController {
     }
     
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         try {
             orderService.delete(id);
@@ -151,11 +170,14 @@ public class OrderController {
     
     // ==================== Endpoints del Carrito ====================
     
+    // ===== Carrito - USER (comprar), ADMIN =====
+    
     /**
      * Obtener o crear carrito activo del usuario
      * GET /api/orders/cart?userId=1&companyId=1
      */
     @GetMapping("/cart")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Order> getOrCreateCart(
             @RequestParam Long userId, 
             @RequestParam Long companyId) {
@@ -172,6 +194,7 @@ public class OrderController {
      * GET /api/orders/cart/active/{userId}
      */
     @GetMapping("/cart/active/{userId}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Order> getActiveCart(@PathVariable Long userId) {
         try {
             Optional<Order> cart = orderService.getActiveCart(userId);
@@ -187,6 +210,7 @@ public class OrderController {
      * POST /api/orders/cart/add?userId=1&companyId=1&productId=2&quantity=3
      */
     @PostMapping("/cart/add")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Order> addToCart(
             @RequestParam Long userId,
             @RequestParam Long companyId,
@@ -205,6 +229,7 @@ public class OrderController {
      * PUT /api/orders/cart/{cartId}/item/{itemId}?quantity=5
      */
     @PutMapping("/cart/{cartId}/item/{itemId}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Order> updateCartItem(
             @PathVariable Long cartId,
             @PathVariable Long itemId,
@@ -222,6 +247,7 @@ public class OrderController {
      * DELETE /api/orders/cart/{cartId}/item/{itemId}
      */
     @DeleteMapping("/cart/{cartId}/item/{itemId}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Order> removeFromCart(
             @PathVariable Long cartId,
             @PathVariable Long itemId) {
@@ -238,6 +264,7 @@ public class OrderController {
      * POST /api/orders/cart/{cartId}/checkout
      */
     @PostMapping("/cart/{cartId}/checkout")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Order> checkout(
             @PathVariable Long cartId,
             @RequestBody CheckoutRequest request) {
@@ -254,6 +281,7 @@ public class OrderController {
      * POST /api/orders/{orderId}/confirm-payment
      */
     @PostMapping("/{orderId}/confirm-payment")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Order> confirmPayment(@PathVariable Long orderId) {
         try {
             Order order = orderService.confirmPayment(orderId);
@@ -268,6 +296,7 @@ public class OrderController {
      * POST /api/orders/{orderId}/cancel
      */
     @PostMapping("/{orderId}/cancel")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Order> cancelOrder(@PathVariable Long orderId) {
         try {
             Order order = orderService.cancelOrder(orderId);

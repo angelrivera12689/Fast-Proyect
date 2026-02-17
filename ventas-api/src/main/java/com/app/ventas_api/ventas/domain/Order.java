@@ -1,6 +1,7 @@
 package com.app.ventas_api.ventas.domain;
 
 import com.app.ventas_api.Organizacion.Entity.Company;
+import com.app.ventas_api.Organizacion.Entity.CompanyAddress;
 import com.app.ventas_api.seguridad.domain.User;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
@@ -45,6 +46,11 @@ public class Order {
     
     @Column(name = "shipping_address")
     private String shippingAddress;
+    
+    // Dirección de envío referenciada (CompanyAddress)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shipping_address_id")
+    private CompanyAddress shippingAddressRef;
     
     @Column(columnDefinition = "TEXT")
     private String notes;

@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+
 import com.app.ventas_api.Organizacion.DTO.Request.CompanyRequestDto;
 import com.app.ventas_api.Organizacion.DTO.Response.CompanyResponseDto;
 import com.app.ventas_api.Organizacion.Entity.Company;
@@ -24,6 +27,11 @@ import com.app.ventas_api.Organizacion.IService.ICompanyService;
 /**
  * ORGANIZACION - Controller
  * CompanyController
+ * 
+ * Roles:
+ * - ADMIN: Ver todo, crear, actualizar, eliminar
+ * - COMPANY_ADMIN: Ver todas las empresas
+ * - USER: No tiene acceso
  */
 @CrossOrigin(origins = "*")
 @RestController
@@ -33,7 +41,10 @@ public class CompanyController {
     @Autowired
     private ICompanyService companyService;
     
+    // ===== Todos los métodos requieren rol ADMIN =====
+    
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Company>> findAll() {
         try {
             List<Company> companies = companyService.all();
@@ -44,6 +55,7 @@ public class CompanyController {
     }
     
     @GetMapping("/active")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Company>> findActive() {
         try {
             List<Company> companies = companyService.findByStateTrue();
@@ -54,6 +66,7 @@ public class CompanyController {
     }
     
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Company> findById(@PathVariable Long id) {
         try {
             Optional<Company> company = companyService.findById(id);
@@ -65,6 +78,7 @@ public class CompanyController {
     }
     
     @GetMapping("/nit/{nit}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Company> findByNit(@PathVariable String nit) {
         try {
             Optional<Company> company = companyService.findByNit(nit);
@@ -76,6 +90,7 @@ public class CompanyController {
     }
     
     @GetMapping("/email/{email}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Company> findByEmail(@PathVariable String email) {
         try {
             Optional<Company> company = companyService.findByEmail(email);
@@ -86,8 +101,11 @@ public class CompanyController {
         }
     }
     
+    // ===== Métodos de escritura - Solo ADMIN =====
+    
     @PostMapping
-    public ResponseEntity<Company> create(@RequestBody CompanyRequestDto request) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Company> create(@Valid @RequestBody CompanyRequestDto request) {
         try {
             Company company = Company.builder()
                     .nit(request.getNit())
@@ -107,7 +125,8 @@ public class CompanyController {
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<Company> update(@PathVariable Long id, @RequestBody CompanyRequestDto request) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Company> update(@PathVariable Long id, @Valid @RequestBody CompanyRequestDto request) {
         try {
             Company company = Company.builder()
                     .nit(request.getNit())
@@ -127,6 +146,7 @@ public class CompanyController {
     }
     
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         try {
             companyService.delete(id);

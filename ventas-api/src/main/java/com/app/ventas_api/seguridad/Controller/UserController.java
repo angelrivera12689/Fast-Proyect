@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+
 import com.app.ventas_api.seguridad.DTO.Request.UserRequestDto;
 import com.app.ventas_api.seguridad.domain.User;
 import com.app.ventas_api.seguridad.IService.IUserService;
@@ -22,6 +25,8 @@ import com.app.ventas_api.seguridad.IService.IUserService;
 /**
  * SEGURIDAD - Controller
  * UserController
+ * 
+ * Roles: Solo ADMIN
  */
 @CrossOrigin(origins = "*")
 @RestController
@@ -31,7 +36,10 @@ public class UserController {
     @Autowired
     private IUserService userService;
     
+    // ===== Todos los métodos requieren rol ADMIN =====
+    
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<User>> findAll() {
         try {
             List<User> users = userService.all();
@@ -42,6 +50,7 @@ public class UserController {
     }
     
     @GetMapping("/active")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<User>> findActive() {
         try {
             List<User> users = userService.findByStateTrue();
@@ -52,6 +61,7 @@ public class UserController {
     }
     
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<User> findById(@PathVariable Long id) {
         try {
             Optional<User> user = userService.findById(id);
@@ -63,6 +73,7 @@ public class UserController {
     }
     
     @GetMapping("/username/{username}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<User> findByUsername(@PathVariable String username) {
         try {
             Optional<User> user = userService.findByUsername(username);
@@ -74,6 +85,7 @@ public class UserController {
     }
     
     @GetMapping("/email/{email}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<User> findByEmail(@PathVariable String email) {
         try {
             Optional<User> user = userService.findByEmail(email);
@@ -85,6 +97,7 @@ public class UserController {
     }
     
     @GetMapping("/company/{companyId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<User>> findByCompany(@PathVariable Long companyId) {
         try {
             List<User> users = userService.findByCompanyId(companyId);
@@ -95,7 +108,8 @@ public class UserController {
     }
     
     @PostMapping
-    public ResponseEntity<User> create(@RequestBody UserRequestDto request) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<User> create(@Valid @RequestBody UserRequestDto request) {
         try {
             User user = User.builder()
                     .company(request.getCompanyId() != null ? 
@@ -120,7 +134,8 @@ public class UserController {
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<User> update(@PathVariable Long id, @RequestBody UserRequestDto request) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<User> update(@PathVariable Long id, @Valid @RequestBody UserRequestDto request) {
         try {
             User user = User.builder()
                     .company(request.getCompanyId() != null ? 
@@ -144,6 +159,7 @@ public class UserController {
     }
     
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         try {
             userService.delete(id);
