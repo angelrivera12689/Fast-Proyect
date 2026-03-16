@@ -1,5 +1,18 @@
+import { useState } from 'react';
+import { isAuthenticated, getUser, clearAuthTokens } from '../services/auth';
+
 export default function Navbar({ onNavigate, cartCount = 0 }) {
   const nav = onNavigate || (() => {});
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  // Siempre verificar auth directamente (no useEffect para evitar problemas de renderizado)
+  const user = isAuthenticated() ? getUser() : null;
+
+  const handleLogout = () => {
+    clearAuthTokens();
+    setShowDropdown(false);
+    nav('home');
+  };
 
   const handleNav = (target) => {
     if (target === 'nosotros' || target === 'contacto') {
@@ -10,6 +23,7 @@ export default function Navbar({ onNavigate, cartCount = 0 }) {
     } else {
       nav(target);
     }
+    setShowDropdown(false);
   };
  
   return (
@@ -47,13 +61,100 @@ export default function Navbar({ onNavigate, cartCount = 0 }) {
             </span>
           )}
         </button>
- 
-        <button onClick={() => nav('login')} className="flex items-center gap-2 border border-teal-500/30 text-teal-300 hover:bg-teal-500/10 px-4 py-1.5 rounded-full text-sm transition-all duration-300">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-          </svg>
-          Iniciar sesión
-        </button>
+
+        {user ? (
+          /* Usuario logueado - mostrar dropdown */
+          <div className="relative">
+            <button 
+              onClick={() => setShowDropdown(!showDropdown)}
+              className="flex items-center gap-2 border border-teal-500/30 text-teal-300 hover:bg-teal-500/10 px-4 py-1.5 rounded-full text-sm transition-all duration-300"
+            >
+              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center">
+                <span className="text-white text-xs font-bold">
+                  {user.username ? user.username.charAt(0).toUpperCase() : 'U'}
+                </span>
+              </div>
+              <span className="font-medium hidden md:inline">{user.username}</span>
+              <svg className={`w-3 h-3 transition-transform ${showDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            
+            {showDropdown && (
+              <div className="absolute right-0 mt-3 w-64 bg-[#0d2137]/95 backdrop-blur-md border border-teal-500/20 rounded-xl shadow-2xl overflow-hidden z-50 animate-fadeIn">
+                {/* User Info Header */}
+                <div className="px-4 py-3 bg-gradient-to-r from-teal-500/10 to-cyan-500/10 border-b border-teal-500/10">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center">
+                      <span className="text-white font-bold">
+                        {user.username ? user.username.charAt(0).toUpperCase() : 'U'}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-medium text-sm truncate">{user.username || 'Usuario'}</p>
+                      <p className="text-teal-400/60 text-xs truncate">{user.email}</p>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Menu Options */}
+                <div className="py-2">
+                  <button 
+                    onClick={() => handleNav('cart')}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-teal-100/80 hover:bg-teal-500/10 hover:text-teal-300 transition-all"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span className="text-sm">Mi Carrito</span>
+                    {cartCount > 0 && (
+                      <span className="ml-auto bg-amber-400/20 text-amber-400 text-xs px-2 py-0.5 rounded-full">
+                        {cartCount}
+                      </span>
+                    )}
+                  </button>
+                  
+                  <button 
+                    onClick={() => handleNav('catalog')}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-teal-100/80 hover:bg-teal-500/10 hover:text-teal-300 transition-all"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                    </svg>
+                    <span className="text-sm">Catálogo</span>
+                  </button>
+                </div>
+                
+                {/* Logout Button */}
+                <div className="border-t border-teal-500/10 py-2">
+                  <button 
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-red-400 hover:bg-red-500/10 transition-all"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    <span className="text-sm font-medium">Cerrar Sesión</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          /* Usuario no logueado - mostrar botones de login/register */
+          <>
+            <button onClick={() => nav('login')} className="flex items-center gap-2 border border-teal-500/30 text-teal-300 hover:bg-teal-500/10 px-4 py-1.5 rounded-full text-sm transition-all duration-300">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              Iniciar sesión
+            </button>
+
+            <button onClick={() => nav('register')} className="flex items-center gap-2 bg-gradient-to-r from-teal-500 to-cyan-500 text-white px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-300 hover:shadow-[0_0_20px_rgba(20,184,166,0.4)]">
+              Registrarse
+            </button>
+          </>
+        )}
 
         <button onClick={() => nav('admin-login')} className="flex items-center gap-2 border border-amber-500/30 text-amber-400 hover:bg-amber-500/10 px-4 py-1.5 rounded-full text-sm transition-all duration-300">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -61,10 +162,6 @@ export default function Navbar({ onNavigate, cartCount = 0 }) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
           Admin
-        </button>
- 
-        <button onClick={() => nav('login')} className="flex items-center gap-2 bg-gradient-to-r from-teal-500 to-cyan-500 text-white px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-300 hover:shadow-[0_0_20px_rgba(20,184,166,0.4)]">
-          Registrarse
         </button>
       </div>
     </nav>

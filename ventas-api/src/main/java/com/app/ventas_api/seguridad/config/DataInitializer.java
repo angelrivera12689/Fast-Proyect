@@ -179,17 +179,43 @@ public class DataInitializer implements CommandLineRunner {
             Role userRole = roleRepository.findByName("USER").orElse(null);
             
             if (userRole != null) {
-                User usuario = User.builder()
-                        .username("admin")
-                        .email("admin@farmacialasalud.com")
-                        .passwordHash(passwordEncoder.encode("admin123"))
-                        .phone("3001234567")
-                        .company(empresa)
-                        .active(true)
-                        .build();
-                usuario.getRoles().add(userRole);
-                userRepository.save(usuario);
-                logger.info("DataInitializer: Created user: admin / admin123");
+                // Buscar si el usuario admin ya existe
+                User usuario = userRepository.findByUsername("admin").orElse(null);
+                if (usuario == null) {
+                    usuario = User.builder()
+                            .username("admin")
+                            .email("admin@farmacialasalud.com")
+                            .passwordHash(passwordEncoder.encode("admin123"))
+                            .phone("3001234567")
+                            .company(empresa)
+                            .active(true)
+                            .build();
+                    usuario.getRoles().add(userRole);
+                    userRepository.save(usuario);
+                    logger.info("DataInitializer: Created user: admin / admin123");
+                }
+                
+                // Buscar si el usuario angelfaridr1 ya existe
+                User angelfarid = userRepository.findByUsername("angelfaridr1").orElse(null);
+                if (angelfarid == null) {
+                    angelfarid = User.builder()
+                            .username("angelfaridr1")
+                            .email("angelfaridr1@gmail.com")
+                            .passwordHash(passwordEncoder.encode("password123"))
+                            .phone("3009876543")
+                            .company(empresa)
+                            .active(true)
+                            .twoFactorEnabled(false)
+                            .build();
+                    angelfarid.getRoles().add(userRole);
+                    userRepository.save(angelfarid);
+                    logger.info("DataInitializer: Created user: angelfaridr1 / password123");
+                } else {
+                    // Actualizar 2FA si el usuario ya existe
+                    angelfarid.setTwoFactorEnabled(false);
+                    userRepository.save(angelfarid);
+                    logger.info("DataInitializer: Updated user angelfaridr1 with 2FA disabled");
+                }
             }
         }
     }

@@ -84,4 +84,16 @@ public class GlobalExceptionHandler {
         error.put("status", "401");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }
+    
+    /**
+     * Maneja errores generales del servidor
+     */
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, String>> handleGeneralException(Exception ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", "Error del servidor");
+        error.put("message", ex.getMessage());
+        error.put("status", "500");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    }
 }

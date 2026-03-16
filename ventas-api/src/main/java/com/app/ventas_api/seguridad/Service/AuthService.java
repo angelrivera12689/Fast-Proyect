@@ -5,10 +5,13 @@ import com.app.ventas_api.Organizacion.IRepository.ICompanyRepository;
 import com.app.ventas_api.seguridad.domain.RefreshToken;
 import com.app.ventas_api.seguridad.domain.Role;
 import com.app.ventas_api.seguridad.domain.User;
+import com.app.ventas_api.seguridad.domain.VerificationCode;
+import com.app.ventas_api.seguridad.domain.VerificationCode.CodeType;
 import com.app.ventas_api.seguridad.DTO.*;
 import com.app.ventas_api.seguridad.IRepository.IRoleRepository;
 import com.app.ventas_api.seguridad.IRepository.IUserRepository;
 import com.app.ventas_api.seguridad.IRepository.IRefreshTokenRepository;
+import com.app.ventas_api.seguridad.IRepository.IVerificationCodeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Optional;
-import java.util.UUID;
+import java.util.Random;
 
 /**
  * Authentication Service
@@ -45,6 +48,18 @@ public class AuthService {
     
     @Autowired
     private TotpService totpService;
+    
+    @Autowired
+    private EmailService emailService;
+    
+    @Autowired
+    private IVerificationCodeRepository verificationCodeRepository;
+    
+    // Generador de código numérico
+    private String generateNumericCode() {
+        Random random = new Random();
+        return String.format("%06d", random.nextInt(1000000));
+    }
     
     /**
      * Register new user
@@ -173,8 +188,9 @@ public class AuthService {
     }
     
     /**
-     * Login
+     * Login - Soporta 2FA por correo electrónico
      */
+    @Transactional
     public AuthResponseDto login(LoginRequestDto request) {
         // Find user by username or email
         Optional<User> userOpt = userRepository.findByUsername(request.getUsernameOrEmail());
@@ -198,11 +214,16 @@ public class AuthService {
             throw new RuntimeException("Invalid credentials");
         }
         
-        // Check if 2FA is enabled - if so, require 2FA code
+        // Check if 2FA is enabled - if so, require 2FA code via email
         if (user.getTwoFactorEnabled() != null && user.getTwoFactorEnabled()) {
             // Check if 2FA code was provided
             String twoFactorCode = request.getTwoFactorCode();
             if (twoFactorCode == null || twoFactorCode.isEmpty()) {
+                // Generate and send 2FA code via email
+                String code = generateNumericCode();
+                saveVerificationCode(user, code, CodeType.LOGIN_2FA, 5);
+                emailService.sendTwoFactorCode(user.getEmail(), user.getUsername(), code);
+                
                 // Return response indicating 2FA is required
                 return AuthResponseDto.builder()
                         .token(null)
@@ -216,8 +237,8 @@ public class AuthService {
             }
             
             // Validate 2FA code
-            if (user.getTwoFactorSecret() == null || !totpService.validateCode(user.getTwoFactorSecret(), twoFactorCode)) {
-                throw new RuntimeException("Invalid 2FA code");
+            if (!verifyCode(user.getId(), twoFactorCode, CodeType.LOGIN_2FA)) {
+                throw new RuntimeException("Código de verificación inválido o expirado");
             }
         }
         
@@ -243,46 +264,47 @@ public class AuthService {
     }
     
     /**
-     * Forgot Password - Generate reset token
+     * Forgot Password - Generar código numérico y enviar por email
      */
+    @Transactional
     public String forgotPassword(ForgotPasswordRequestDto request) {
         Optional<User> userOpt = userRepository.findByEmail(request.getEmail());
         
         if (userOpt.isEmpty()) {
             // Don't reveal if email exists
-            return "If the email exists, a reset link has been sent";
+            return "Si el correo existe, se ha enviado un código de verificación";
         }
         
         User user = userOpt.get();
         
-        // Generate reset token
-        String resetToken = UUID.randomUUID().toString();
-        user.setPasswordResetToken(resetToken);
-        user.setPasswordResetExpires(LocalDateTime.now().plusHours(24));
+        // Generate 6-digit numeric code
+        String code = generateNumericCode();
         
-        userRepository.save(user);
+        // Save verification code (expires in 10 minutes)
+        saveVerificationCode(user, code, CodeType.PASSWORD_RESET, 10);
         
-        // In production, send email with reset link
-        // For now, return the token (for testing)
-        return "Password reset token: " + resetToken;
+        // Send email with code
+        emailService.sendPasswordResetCode(user.getEmail(), user.getUsername(), code);
+        
+        return "Se ha enviado un código de verificación a tu correo electrónico";
     }
     
     /**
-     * Reset Password with token
+     * Reset Password with verification code
      */
     public String resetPassword(ResetPasswordDto request) {
-        Optional<User> userOpt = userRepository.findByPasswordResetToken(request.getToken());
+        // Find user by email from the request
+        Optional<User> userOpt = userRepository.findByEmail(request.getEmail());
         
         if (userOpt.isEmpty()) {
-            throw new RuntimeException("Invalid or expired token");
+            throw new RuntimeException("Usuario no encontrado");
         }
         
         User user = userOpt.get();
         
-        // Check if token is expired
-        if (user.getPasswordResetExpires() == null || 
-            user.getPasswordResetExpires().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Token has expired");
+        // Verify the code
+        if (!verifyCode(user.getId(), request.getCode(), CodeType.PASSWORD_RESET)) {
+            throw new RuntimeException("Código inválido o expirado");
         }
         
         // Update password
@@ -292,7 +314,10 @@ public class AuthService {
         
         userRepository.save(user);
         
-        return "Password reset successful";
+        // Mark code as used
+        markCodeAsUsed(user.getId(), request.getCode(), CodeType.PASSWORD_RESET);
+        
+        return "Contraseña restablecida exitosamente";
     }
     
     /**
@@ -370,5 +395,56 @@ public class AuthService {
                 .build();
         
         refreshTokenRepository.save(refreshToken);
+    }
+    
+    /**
+     * Save verification code to database
+     */
+    @Transactional
+    private void saveVerificationCode(User user, String code, CodeType codeType, int minutesValid) {
+        // Invalidate old codes of the same type
+        verificationCodeRepository.invalidateOldCodes(user.getId(), codeType);
+        
+        // Create new verification code
+        VerificationCode verificationCode = VerificationCode.builder()
+                .user(user)
+                .code(code)
+                .codeType(codeType)
+                .expiresAt(LocalDateTime.now().plusMinutes(minutesValid))
+                .used(false)
+                .build();
+        
+        verificationCodeRepository.save(verificationCode);
+    }
+    
+    /**
+     * Verify if a code is valid
+     */
+    private boolean verifyCode(Long userId, String code, CodeType codeType) {
+        Optional<VerificationCode> codeOpt = verificationCodeRepository.findByCodeAndType(code, codeType);
+        
+        if (codeOpt.isEmpty()) {
+            return false;
+        }
+        
+        VerificationCode verificationCode = codeOpt.get();
+        
+        // Check if the code belongs to the correct user
+        if (!verificationCode.getUser().getId().equals(userId)) {
+            return false;
+        }
+        
+        return verificationCode.isValid();
+    }
+    
+    /**
+     * Mark a code as used
+     */
+    private void markCodeAsUsed(Long userId, String code, CodeType codeType) {
+        verificationCodeRepository.findByCodeAndType(code, codeType)
+                .ifPresent(vc -> {
+                    vc.setUsed(true);
+                    verificationCodeRepository.save(vc);
+                });
     }
 }

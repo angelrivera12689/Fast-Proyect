@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { login } from '../services/auth';
 
 export default function Login({ onNavigate }) {
-  const [form, setForm] = useState({ usernameOrEmail: '', password: '', twoFactorCode: '' });
+  const [form, setForm] = useState({ usernameOrEmail: '', password: '' });
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -18,16 +18,12 @@ export default function Login({ onNavigate }) {
     setError('');
     
     try {
+      // Login function handles token storage internally
+      // eslint-disable-next-line no-unused-vars
       const result = await login(form);
       
-      // Verificar si se requiere 2FA
-      if (result.twoFactorRequired) {
-        // TODO: Implementar lógica para 2FA
-        console.log('Se requiere autenticación de dos factores');
-      } else {
-        // Login exitoso
-        onNavigate('catalog');
-      }
+      // Login exitoso - navegar al home para que la navbar se actualice
+      onNavigate('home');
     } catch (error) {
       setError(error.message || 'Correo/usuario o contraseña incorrectos');
     } finally {
@@ -106,7 +102,7 @@ export default function Login({ onNavigate }) {
             <div>
               <div className="flex justify-between items-center mb-1.5">
                 <label className="text-teal-400/60 text-xs tracking-wide">Contraseña</label>
-                <button type="button" className="text-teal-400/50 hover:text-teal-300 text-xs transition-colors">
+                <button type="button" onClick={() => onNavigate('forgot-password')} className="text-teal-400/50 hover:text-teal-300 text-xs transition-colors">
                   ¿Olvidaste tu contraseña?
                 </button>
               </div>
@@ -137,25 +133,7 @@ export default function Login({ onNavigate }) {
               </div>
             </div>
 
-            {/* 2FA Code (optional) */}
-            <div>
-              <label className="text-teal-400/60 text-xs tracking-wide mb-1.5 block">
-                Código 2FA <span className="text-teal-500/30">(opcional)</span>
-              </label>
-              <div className="relative">
-                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-teal-500/40">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                </div>
-                <input
-                  name="twoFactorCode" type="text" value={form.twoFactorCode} onChange={handleChange}
-                  placeholder="Código de 6 dígitos"
-                  maxLength={6}
-                  className="w-full bg-[#071525] border border-teal-500/20 rounded-xl pl-10 pr-4 py-3 text-sm text-teal-100 placeholder-teal-500/25 outline-none focus:border-teal-400/60 focus:shadow-[0_0_0_3px_rgba(20,184,166,0.08)] transition-all"
-                />
-              </div>
-            </div>
+
 
             {/* Error */}
             {error && (
