@@ -11,6 +11,8 @@ public class CompanyAddressResponseDto {
     private String city;
     private String department;
     private String zipCode;
+    private Double latitude;
+    private Double longitude;
     private String contactName;
     private String contactPhone;
     private Boolean isDefault;
@@ -73,6 +75,22 @@ public class CompanyAddressResponseDto {
 
     public void setZipCode(String zipCode) {
         this.zipCode = zipCode;
+    }
+
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
+    }
+
+    public Double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
     }
 
     public String getContactName() {

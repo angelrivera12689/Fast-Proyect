@@ -103,6 +103,8 @@ public class CompanyAddressController {
         dto.setCity(address.getCity());
         dto.setDepartment(address.getDepartment());
         dto.setZipCode(address.getZipCode());
+        dto.setLatitude(address.getLatitude());
+        dto.setLongitude(address.getLongitude());
         dto.setContactName(address.getContactName());
         dto.setContactPhone(address.getContactPhone());
         dto.setIsDefault(address.getIsDefault());

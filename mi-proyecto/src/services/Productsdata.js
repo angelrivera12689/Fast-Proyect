@@ -1,0 +1,45 @@
+export const CATEGORIES = [
+  'Todos',
+  'Antibióticos',
+  'Analgésicos',
+  'Antiinflamatorios',
+  'Cardiovascular',
+  'Diabetes',
+  'Gastroenterología',
+  'Respiratorio',
+  'Vitaminas',
+];
+
+export const LABS = [
+  'Todos',
+  'Bayer',
+  'Pfizer',
+  'Genfar',
+  'La Santé',
+  'MK',
+  'Tecnoquímicas',
+  'Abbott',
+];
+
+export const products = [
+  { id: 1,  name: 'Amoxicilina 500mg x 100 cáps',   category: 'Antibióticos',       lab: 'Genfar',         price: 18500,  stock: 240, minOrder: 10 },
+  { id: 2,  name: 'Azitromicina 500mg x 30 tabs',    category: 'Antibióticos',       lab: 'MK',             price: 42000,  stock: 85,  minOrder: 5  },
+  { id: 3,  name: 'Ciprofloxacina 500mg x 100 tabs', category: 'Antibióticos',       lab: 'La Santé',       price: 35000,  stock: 0,   minOrder: 5  },
+  { id: 4,  name: 'Ibuprofeno 400mg x 100 tabs',     category: 'Analgésicos',        lab: 'Tecnoquímicas',  price: 12900,  stock: 520, minOrder: 20 },
+  { id: 5,  name: 'Acetaminofén 500mg x 200 tabs',   category: 'Analgésicos',        lab: 'Genfar',         price: 9800,   stock: 630, minOrder: 20 },
+  { id: 6,  name: 'Tramadol 50mg x 50 cáps',         category: 'Analgésicos',        lab: 'Abbott',         price: 55000,  stock: 60,  minOrder: 5  },
+  { id: 7,  name: 'Diclofenaco 50mg x 100 tabs',     category: 'Antiinflamatorios',  lab: 'Bayer',          price: 22000,  stock: 310, minOrder: 10 },
+  { id: 8,  name: 'Naproxeno 500mg x 100 tabs',      category: 'Antiinflamatorios',  lab: 'La Santé',       price: 19500,  stock: 175, minOrder: 10 },
+  { id: 9,  name: 'Atorvastatina 40mg x 30 tabs',    category: 'Cardiovascular',     lab: 'Pfizer',         price: 28700,  stock: 95,  minOrder: 5  },
+  { id: 10, name: 'Losartán 50mg x 30 tabs',         category: 'Cardiovascular',     lab: 'MK',             price: 16800,  stock: 210, minOrder: 10 },
+  { id: 11, name: 'Amlodipino 10mg x 30 tabs',       category: 'Cardiovascular',     lab: 'Genfar',         price: 14200,  stock: 140, minOrder: 10 },
+  { id: 12, name: 'Metformina 850mg x 100 tabs',     category: 'Diabetes',           lab: 'Tecnoquímicas',  price: 22000,  stock: 380, minOrder: 10 },
+  { id: 13, name: 'Glibenclamida 5mg x 100 tabs',    category: 'Diabetes',           lab: 'La Santé',       price: 11500,  stock: 90,  minOrder: 10 },
+  { id: 14, name: 'Omeprazol 20mg x 30 cáps',        category: 'Gastroenterología',  lab: 'MK',             price: 15300,  stock: 460, minOrder: 10 },
+  { id: 15, name: 'Ranitidina 150mg x 100 tabs',     category: 'Gastroenterología',  lab: 'Genfar',         price: 13700,  stock: 0,   minOrder: 10 },
+  { id: 16, name: 'Salbutamol Inhalador 200 dosis',  category: 'Respiratorio',       lab: 'Abbott',         price: 38000,  stock: 55,  minOrder: 5  },
+  { id: 17, name: 'Loratadina 10mg x 100 tabs',      category: 'Respiratorio',       lab: 'Bayer',          price: 9800,   stock: 420, minOrder: 20 },
+  { id: 18, name: 'Vitamina D3 1000UI x 60 cáps',    category: 'Vitaminas',          lab: 'Abbott',         price: 32000,  stock: 200, minOrder: 5  },
+  { id: 19, name: 'Complejo B x 100 tabs',            category: 'Vitaminas',          lab: 'Tecnoquímicas',  price: 18000,  stock: 310, minOrder: 10 },
+  { id: 20, name: 'Vitamina C 1000mg x 100 tabs',    category: 'Vitaminas',          lab: 'MK',             price: 21500,  stock: 270, minOrder: 10 },
+];

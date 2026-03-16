@@ -40,6 +40,8 @@ public class CompanyAddressService implements ICompanyAddressService {
         address.setCity(request.getCity());
         address.setDepartment(request.getDepartment());
         address.setZipCode(request.getZipCode());
+        address.setLatitude(request.getLatitude());
+        address.setLongitude(request.getLongitude());
         address.setContactName(request.getContactName());
         address.setContactPhone(request.getContactPhone());
         address.setIsDefault(request.getIsDefault() != null ? request.getIsDefault() : false);
@@ -64,6 +66,8 @@ public class CompanyAddressService implements ICompanyAddressService {
         address.setCity(request.getCity());
         address.setDepartment(request.getDepartment());
         address.setZipCode(request.getZipCode());
+        address.setLatitude(request.getLatitude());
+        address.setLongitude(request.getLongitude());
         address.setContactName(request.getContactName());
         address.setContactPhone(request.getContactPhone());
         

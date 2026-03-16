@@ -1,0 +1,1665 @@
+% ==============================================================================
+% ==============================================================================
+% Documento de Especificación del Proyecto - Sistema de Ventas B2B
+% ==============================================================================
+% ==============================================================================
+
+\documentclass[12pt,a4paper,oneside]{book}
+
+% -----------------------------------------------------------------------------
+% Paquetes y configuración
+% -----------------------------------------------------------------------------
+\usepackage[spanish,es-tabla]{babel}       % Idioma español
+\usepackage[utf8]{inputenc}                  % Codificación UTF-8
+\usepackage[T1]{fontenc}                     % Codificación de fuentes
+\usepackage{graphicx}                        % Gráficos e imágenes
+\usepackage{hyperref}                        % Hipervínculos
+\usepackage{geometry}                        % Configuración de página
+\usepackage{titlesec}                        % Formato de títulos
+\usepackage{fancyhdr}                        % Encabezados y pies
+\usepackage{booktabs}                        % Tablas profesionales
+\usepackage{listings}                        % Código fuente
+\usepackage{xcolor}                          % Colores
+\usepackage{amsmath,amssymb}                 % Matemáticas
+\usepackage{parskip}                         % Espaciado entre párrafos
+\usepackage{enumitem}                        % Listas personalizadas
+\usepackage{pdflscape}                       % Páginas horizontales
+\usepackage{longtable}                       % Tablas largas
+\usepackage{rotating}                        % Rotación de elementos
+
+% Configuración de hipervínculos
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=cyan,
+    pdftitle={Sistema de Ventas B2B - Especificación Técnica},
+    pdfauthor={Equipo de Desarrollo},
+    pdfsubject={Proyecto de Plataforma de Ventas B2B},
+    pdfkeywords={B2B, Spring Boot, React, E-commerce, JWT, 2FA}
+}
+
+% Configuración de página
+\geometry{
+    left=25mm,
+    right=25mm,
+    top=30mm,
+    bottom=25mm,
+    headheight=15pt,
+    footskip=15pt
+}
+
+% Colores personalizados
+\definecolor{primary}{RGB}{0,82,147}
+\definecolor{secondary}{RGB}{52,152,219}
+\definecolor{accent}{RGB}{231,76,60}
+\definecolor{success}{RGB}{39,174,96}
+\definecolor{dark}{RGB}{44,62,80}
+\definecolor{light}{RGB={236,240,241}
+\definecolor{codebg}{RGB}{245,245,245}
+\definecolor{codekeyword}{RGB}{0,0,255}
+\definecolor{codestring}{RGB}{163,21,21}
+
+% Configuración de listados de código
+\lstset{
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{codekeyword}\bfseries,
+    stringstyle=\color{codestring},
+    commentstyle=\color{gray}\itshape,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=5pt,
+    tabsize=2,
+    breaklines=true,
+    showstringspaces=false,
+    frame=single,
+    framerule=0.5pt
+}
+
+% Configuración de títulos de secciones
+\titleformat{\chapter}[display]
+    {\normalfont\Huge\bfseries\color{primary}}
+    {\chaptertitlename\ \thechapter}{20pt}{\Huge}
+\titleformat{\section}
+    {\normalfont\Large\bfseries\color{dark}}
+    {\thesection}{1em}{}
+\titleformat{\subsection}
+    {\normalfont\large\bfseries\color{dark}}
+    {\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+    {\normalfont\normalsize\bfseries\color{dark}}
+    {\thesubsubsection}{1em}{}
+
+% Encabezados y pies de página
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\nouppercase{\leftmark}}
+\fancyhead[R]{\thepage}
+\fancyfoot[C]{\textbf{Sistema de Ventas B2B}}
+\fancyfoot[R]{\thepage}
+\fancyfoot[L]{\href{https://github.com}{Repositorio del Proyecto}}
+
+% Comandos personalizados
+\newcommand{\chaptercolor}[1]{\textcolor{primary}{#1}}
+\newcommand{\alert}[1]{\textcolor{accent}{\textbf{#1}}}
+\newcommand{\success}[1]{\textcolor{success}{\textbf{#1}}}
+\newcommand{\info}[1]{\textcolor{secondary}{\textbf{#1}}}
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+
+% Configuración de enumerate
+\setlist[enumerate]{itemsep=0mm, partopsep=0mm}
+\setlist[itemize]{itemsep=0mm, partopsep=0mm}
+
+% ==============================================================================
+% INICIO DEL DOCUMENTO
+% ==============================================================================
+
+\begin{document}
+
+% -----------------------------------------------------------------------------
+% PORTADA
+% -----------------------------------------------------------------------------
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+    
+    % Logo o imagen
+    \includegraphics[width=0.3\textwidth]{}\\[2cm]
+    \textbf{\LARGE\color{primary}Sistema de Ventas B2B}\\[0.5cm]
+    \textbf{\large con Pasarela de Pago}\\[2cm]
+    
+    \HRule\\[0.5cm]
+    \textbf{\huge Documento de Especificación Técnica}\\[0.5cm]
+    \HRule\\[2cm]
+    
+    \begin{table}[ht]
+        \centering
+        \begin{tabular}{p{3.5cm}p{10cm}}
+            \textbf{Backend:} & Java + Spring Boot \\
+            \textbf{Frontend:} & React + Vite \\
+            \textbf{Base de datos:} & MySQL/MariaDB o PostgreSQL \\
+            \textbf{Versión:} & 1.0 \\
+            \textbf{Fecha:} & \today
+        \end{tabular}
+    \end{table}\\[2cm]
+    
+    \vspace*{\fill}
+    \textbf{\textit{Proyecto de Desarrollo - 2026}}\\[0.5cm]
+\end{titlepage}
+
+% -----------------------------------------------------------------------------
+% PÁGINA DE LICENCIA Y INFO
+% -----------------------------------------------------------------------------
+\clearpage
+\thispagestyle{empty}
+\vspace*{5cm}
+\begin{center}
+    \textbf{\Large Acerca de este Documento}\\[1cm]
+    
+    \begin{minipage}{0.8\textwidth}
+        Este documento contiene la especificación técnica completa para el desarrollo 
+        del Sistema de Ventas B2B. Incluye los objetivos del proyecto, alcance funcional, 
+        arquitectura, modelo de datos y flujos del sistema.
+    \end{minipage}\\[2cm]
+    
+    \HRule\\[1cm]
+    \begin{tabular}{p{5cm}p{8cm}}
+        \textbf{Estado:} & En Desarrollo \\
+        \textbf{Tipo:} & Especificación Técnica \\
+        \textbf{Clasificación:} & Público
+    \end{tabular}
+\end{center}
+
+% -----------------------------------------------------------------------------
+% TABLA DE CONTENIDOS
+% -----------------------------------------------------------------------------
+\clearpage
+\tableofcontents
+\clearpage
+
+% ==============================================================================
+% CAPÍTULO 1: OBJETIVOS DEL PROYECTO
+% ==============================================================================
+\chapter{Objetivos del Proyecto}
+\label{cap:objetivos}
+
+\section{Propósito del Sistema}
+El presente documento tiene como propósito establecer las especificaciones técnicas 
+y funcionales para el desarrollo de una plataforma web de ventas B2B (Business-to-Business) 
+que permita a empresas registradas gestionar sus pedidos de manera eficiente y segura.
+
+\section{Objetivos Estratégicos}
+
+\subsection{Objetivo General}
+Desarrollar una plataforma web de ventas B2B que permita:
+\begin{itemize}
+    \item El registro y gestión de empresas en el sistema.
+    \item La administración de múltiples usuarios por empresa.
+    \item La autenticación segura mediante JWT con soporte para 2FA.
+    \item El CRUD completo de productos y categorías.
+    \item La gestión de pedidos y-carrito de compras.
+    \item El procesamiento de pagos mediante pasarela externa.
+    \item La gestión de contenido (CMS) desde el panel de administración.
+    \item El registro de auditoría y seguridad.
+\end{itemize}
+
+\section{Alcance del Proyecto}
+
+\subsection{Incluido en el Sistema}
+\begin{itemize}
+    \item Registro de empresas con NIT y razón social.
+    \item Múltiples usuarios por empresa con roles diferenciados.
+    \item Autenticación JWT con refresh tokens.
+    \item Autenticación de dos factores (2FA) mediante TOTP.
+    \item Recuperación y cambio de contraseña.
+    \item Cerrar sesión segura con invalidación de tokens.
+    \item CRUD de productos y categorías (gestión desde admin).
+    \item Subida de imágenes múltiples por producto.
+    \item Carrito de compras persistente.
+    \item Lista de deseos (favoritos).
+    \item Cotizaciones B2B.
+    \item Pedidos recurrentes (compras programadas).
+    \item Pasarela de pago (Stripe/MercadoPago).
+    \item Confirmación automática de compras.
+    \item Gestión de contenido (CMS).
+    \item Registro de auditoría.
+\end{itemize}
+
+\subsection{No Incluido en el Sistema}
+\begin{alert}{IMPORTANTE:} El sistema \textbf{NO} maneja suscripciones ni cobros mensuales. 
+Solo procesamiento de compras directas por pedido.
+
+\section{Resultados Esperados}
+\begin{enumerate}
+    \item Plataforma web funcional para ventas B2B.
+    \item Sistema de autenticación seguro con JWT y 2FA.
+    \item Panel de administración completo.
+    \item Integración con pasarela de pago.
+    \item Documentación técnica actualizada.
+\end{enumerate}
+
+% ==============================================================================
+% CAPÍTULO 2: ALCANCE FUNCIONAL
+% ==============================================================================
+\chapter{Alcance Funcional}
+\label{cap:alcance}
+
+\section{Autenticación y Seguridad}
+\label{sec:autenticacion}
+
+\subsection{Registro de Usuarios}
+Sistema de registro que permite:
+\begin{itemize}
+    \item Registro de empresas con datos completos (NIT, razón social).
+    \item Registro de usuarios asociados a empresas.
+    \item Validación de datos única (email, NIT, username).
+\end{itemize}
+
+\subsection{Inicio de Sesión JWT}
+\begin{itemize}
+    \item Generación de access token (duración: 15-30 minutos).
+    \item Generación de refresh token (duración: 7 días).
+    \item Renovación de sesión automática mediante refresh token.
+\end{itemize}
+
+\subsection{Autenticación de Dos Factores (2FA)}
+\begin{info}{CARACTERÍSTICA CLAVE:} Implementación de TOTP (Time-based One-Time Password) 
+compatible con Google Authenticator y aplicaciones similares.
+
+\begin{itemize}
+    \item Habilitación opcional desde el perfil del usuario.
+    \item Generación de secreto TOTP único por usuario.
+    \item Visualización de código QR para escaneo.
+    \item Verificación de código inicial para activar 2FA.
+    \item Solicitud de código en cada inicio de sesión si está habilitado.
+\end{itemize}
+
+\subsection{Recuperación de Contraseña}
+\begin{enumerate}
+    \item Solicitud mediante email.
+    \item Generación de token de recuperación (expiración: 1 hora).
+    \item Envío de email con enlace de recuperación.
+    \item Validación de token y actualización de contraseña.
+    \item Invalidación de tokens anteriores.
+\end{enumerate}
+
+\subsection{Cambio de Contraseña}
+\begin{itemize}
+    \item Cambio desde el perfil de usuario.
+    \item Validación de contraseña actual.
+    \item Invalidación de todos los tokens activos (logout de todos los dispositivos).
+    \item Envío de notificación por email.
+\end{itemize}
+
+\subsection{Cerrar Sesión (Logout)}
+\begin{enumerate}
+    \item Solicitud de cierre de sesión.
+    \item Marcado de refresh token como revocado.
+    \item Eliminación de access token del cliente.
+    \item (Opcional) Cierre de sesiones en todos los dispositivos.
+\end{enumerate}
+
+\subsection{Roles y Permisos}
+\begin{table}[ht]
+    \centering
+    \caption{Roles del sistema y permisos asociados}
+    \begin{tabular}{@{}ll@{}}
+        \toprule
+        \textbf{Rol} & \textbf{Descripción} \\
+        \midrule
+        ADMIN & Administrador del sistema \\
+        COMPANY\_ADMIN & Administrador de empresa \\
+        BUYER & Comprador/Usuario de empresa \\
+        CONTENT\_MANAGER & Gestor de contenido CMS \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\section{Gestión de Empresas}
+\label{sec:empresas}
+
+\subsection{Registro de Empresas}
+\begin{itemize}
+    \item NIT (Número de Identificación Tributaria).
+    \item Razón social.
+    \item Email de contacto.
+    \item Teléfono.
+    \item Dirección.
+    \item Logo (opcional).
+\end{itemize}
+
+\subsection{Gestión de Empresa (Admin)}
+\begin{itemize}
+    \item CRUD completo de empresas.
+    \item Activación/Desactivación de empresas.
+    \item Visualización de empresas registradas.
+    \item Gestión de usuarios por empresa.
+\end{itemize}
+
+\section{Ventas - Productos}
+\label{sec:productos}
+
+\subsection{Catálogo de Productos}
+\begin{itemize}
+    \item Nombre, descripción, precio base, stock.
+    \item SKU único por producto.
+    \item Peso y dimensiones.
+    \item Estados: activo/inactivo.
+\end{itemize}
+
+\subsection{Categorías}
+\begin{itemize}
+    \item CRUD completo de categorías.
+    \item Soporte para subcategorías (jerarquía).
+    \item Imagen por categoría.
+    \item Orden de visualización.
+\end{itemize}
+
+\subsection{Imágenes de Productos}
+\begin{itemize}
+    \item Múltiples imágenes por producto.
+    \item Imagen principal (primary).
+    \item Orden de visualización (sort\_order).
+\end{itemize}
+
+\subsection{Atributos Variables}
+\begin{itemize}
+    \item Tallas (S, M, L, XL, etc.).
+    \item Colores.
+    \item Otras variantes de producto.
+\end{itemize}
+
+\section{Carrito y Pedidos}
+\label{sec:ventas}
+
+\subsection{Carrito de Compras}
+\begin{itemize}
+    \item \success{CARRITO PERSISTENTE}: Se guarda aunque el usuario cierre sesión.
+    \item Guardar carrito para después.
+    \item Actualización de cantidades.
+    \item Eliminación de items.
+\end{itemize}
+
+\subsection{Lista de Deseos (Wishlist)}
+\begin{itemize}
+    \item Agregar productos como favoritos.
+    \item Visualización de productos deseados.
+    \item Mover productos al carrito.
+\end{itemize}
+
+\subsection{Cotizaciones (B2B)}
+\begin{itemize}
+    \item Solicitar cotización sin comprar inmediatamente.
+    \item Precios especiales por empresa.
+    \item Validez de cotización configurable.
+    \item Estados: PENDING, APPROVED, REJECTED, EXPIRED.
+\end{itemize}
+
+\subsection{Pedidos}
+\begin{itemize}
+    \item Creación de pedido desde carrito.
+    \item Estados del pedido: CART, PENDING\_PAYMENT, PAID, SHIPPED, DELIVERED, CANCELLED.
+    \item Dirección de envío.
+    \item Notas adicionales.
+    \item Historial de compras.
+\end{itemize}
+
+\section{Descuentos y Precios}
+\label{sec:descuentos}
+
+\subsection{Descuentos por Cantidad (Price Tiers)}
+\begin{itemize}
+    \item Precios por volumen/configuración de rangos.
+    \item Ejemplo: 1-10 unidades = \$10, 11-50 = \$9, etc.
+    \item Almacenamiento en formato JSON.
+\end{itemize}
+
+\subsection{Descuentos por Empresa (B2B)}
+\begin{itemize}
+    \item Precios especiales definidos por empresa.
+    \item Acuerdos comerciales personalizados.
+\end{itemize}
+
+\subsection{Cupones de Descuento}
+\begin{itemize}
+    \item Código de cupón.
+    \item Porcentaje o monto fijo.
+    \item Validez por fecha.
+    \item Usos limitados.
+\end{itemize}
+
+\subsection{Límites de Crédito}
+\begin{itemize}
+    \item Comprar ahora, pagar después.
+    \item Configuración de crédito por empresa.
+    \item Control de deuda pendiente.
+\end{itemize}
+
+\section{Gestión de Contenido (CMS)}
+\label{sec:cms}
+
+Desde el panel de administración se puede gestionar:
+
+\begin{itemize}
+    \item \textbf{Página principal}: Hero, banners, productos destacados.
+    \item \textbf{About Us / Nosotros}: Texto institucional.
+    \item \textbf{Información de contacto}: Datos de contacto.
+    \item \textbf{Políticas}: Términos y condiciones, privacidad.
+    \item \textbf{Footer y encabezados}: Configuración visual.
+    \item \textbf{Banners promocionales}: Imágenes rotativas.
+    \item \textbf{Noticias / Blog}: Artículos informativos.
+\end{itemize}
+
+\section{Archivos y Multimedia}
+\label{sec:archivos}
+
+\begin{itemize}
+    \item Subida de imágenes.
+    \item Imágenes para productos.
+    \item Avatar de usuario.
+    \item Galerías multimedia.
+    \item Almacenamiento en S3 o Cloudinary.
+\end{itemize}
+
+\section{Seguridad del Sistema}
+\label{sec:seguridad}
+
+\begin{itemize}
+    \item JWT con access token y refresh token.
+    \item Hash de contraseñas (bcrypt/Argon2id).
+    \item 2FA (TOTP).
+    \item Roles y permisos granulares.
+    \item Auditoría de acciones (AuditLog).
+    \item Rate limiting (límite de peticiones).
+    \item Protección CSRF.
+    \item HTTPS obligatorio.
+\end{itemize}
+
+% ==============================================================================
+% CAPÍTULO 3: STACK TECNOLÓGICO
+% ==============================================================================
+\chapter{Stack Tecnológico}
+\label{cap:stack}
+
+\section{Backend}
+\label{sec:backend}
+
+\begin{table}[ht]
+    \centering
+    \caption{Tecnologías del Backend}
+    \begin{tabular}{@{}llp{8cm}@{}}
+        \toprule
+        \textbf{Tecnología} & \textbf{Versión} & \textbf{Descripción} \\
+        \midrule
+        Java & 17 & Lenguaje de programación \\
+        Spring Boot & 3.5.10 & Framework principal \\
+        Spring Security & 6.x & Seguridad y autenticación \\
+        JWT (jjwt) & 0.12.5 & Generación y validación de tokens \\
+        JPA/Hibernate & - & ORM para acceso a datos \\
+        MySQL/MariaDB & 8.x & Base de datos (via XAMPP) \\
+        PostgreSQL & 15+ & Base de datos alternativa \\
+        MercadoPago SDK & 2.1.1 & Pasarela de pago \\
+        S3/Cloudinary & - & Almacenamiento de archivos \\
+        dev.samstevens.totp & 1.7.1 & Librería TOTP para 2FA \\
+        Lombok & - & Reducción de boilerplate \\
+        Bucket4j & 8.10.1 & Rate limiting \\
+        SpringDoc OpenAPI & 2.3.0 & Documentación Swagger UI \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\section{Frontend}
+\label{sec:frontend}
+
+\begin{table}[ht]
+    \centering
+    \caption{Tecnologías del Frontend}
+    \begin{tabular}{@{}llp{8cm}@{}}
+        \toprule
+        \textbf{Tecnología} & \textbf{Versión} & \textbf{Descripción} \\
+        \midrule
+        React & 18+ & Biblioteca de UI \\
+        Vite & 5+ & Build tool y servidor de desarrollo \\
+        React Router & 6.x & Enrutamiento de páginas \\
+        Axios & 1.x & Cliente HTTP \\
+        Context API / Redux & - & Gestión de estado \\
+        Tailwind CSS / MUI & - & Estilos y componentes \\
+        react-qr-code & - & Generación de QR para 2FA \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\section{Infraestructura}
+\label{sec:infraestructura}
+
+\begin{itemize}
+    \item \textbf{Docker}: Contenedores para despliegue.
+    \item \textbf{Nginx}: Servidor web y proxy reverso.
+    \item \textbf{HTTPS}: Seguridad en tránsito.
+    \item \textbf{Email Service}: SendGrid, AWS SES o SMTP.
+\end{itemize}
+
+% ==============================================================================
+% CAPÍTULO 4: ARQUITECTURA
+% ==============================================================================
+\chapter{Arquitectura del Sistema}
+\label{cap:arquitectura}
+
+\section{Arquitectura N-Capas por Módulo}
+\label{sec:arquitectura_n_capas}
+
+El proyecto sigue una arquitectura N-Capas por módulo, similar a una arquitectura de microservicios, 
+pero monolítica. Cada módulo tiene su propia estructura de 4 capas:
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.8\textwidth]{}
+    \caption{Arquitectura N-Capas por Módulo}
+    \label{fig:arquitectura_capas}
+\end{figure}
+
+\subsection{Estructura de Directorios}
+
+\begin{lstlisting}[language=bash, numbers=none]
+ventas-api/src/main/java/com/app/ventas_api/
+|
++-- organizacion/              # MODULO: Empresas
+|   +-- domain/               # Entidades, objetos de valor
+|   +-- application/           # Casos de uso, servicios
+|   +-- infrastructure/       # Repositorios, BD
+|   +-- presentation/         # Controladores, DTOs
+|
++-- productos/                 # MODULO: Productos
+|   +-- domain/
+|   +-- application/
+|   +-- infrastructure/
+|   +-- presentation/
+|
++-- ventas/                   # MODULO: Pedidos y Pagos
+|   +-- domain/
+|   +-- application/
+|   +-- infrastructure/
+|   +-- presentation/
+|
++-- seguridad/                # MODULO: Auth, JWT, Roles
+|   +-- domain/              # User, Role, RefreshToken
+|   +-- application/
+|   +-- infrastructure/
+|   +-- presentation/
+|
++-- shared/                   # Comun
+    +-- kernel/              # Utilidades globales
+    +-- infrastructure/      # Config global
+\end{lstlisting}
+
+\subsection{Descripción de Capas}
+
+\begin{description}
+    \item[Domain] Entidades del negocio, objetos de valor, interfaces de repositorio.
+    \item[Application] Casos de uso, servicios de aplicación, DTOs.
+    \item[Infrastructure] Implementaciones de repositorios, configuración de BD.
+    \item[Presentation] Controladores REST, DTOs de request/response.
+\end{description}
+
+\section{Modelo de Despliegue}
+\label{sec:despliegue}
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}[node distance=2cm, scale=0.8, transform shape]
+        \node (Client) [rectangle, draw, fill=blue!20] {Navegador Cliente};
+        \node (Nginx) [rectangle, draw, fill=green!20, right=of Client] {Nginx (Proxy)};
+        \node (Backend) [rectangle, draw, fill=yellow!20, right=of Nginx] {Spring Boot API};
+        \node (DB) [cylinder, draw, fill=orange!20, right=of Backend] {MySQL/PostgreSQL};
+        \node (Storage) [rectangle, draw, fill=purple!20, below=of Backend] {S3/Cloudinary};
+        \node (Payment) [rectangle, draw, fill=red!20, below=of Nginx] {Pasarela Pago};
+        
+        \draw [->] (Client) -- (Nginx);
+        \draw [->] (Nginx) -- (Backend);
+        \draw [->] (Backend) -- (DB);
+        \draw [->] (Backend) -- (Storage);
+        \draw [->] (Backend) -- (Payment);
+    \end{tikzpicture}
+    \caption{Arquitectura de Despliegue}
+    \label{fig:despliegue}
+\end{figure}
+
+% ==============================================================================
+% CAPÍTULO 5: MODELO ENTIDAD-RELACIÓN
+% ==============================================================================
+\chapter{Modelo Entidad-Relación (MER)}
+\label{cap:mer}
+
+\section{Diagrama ER Conceptual}
+\label{sec:er_conceptual}
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}[node distance=1.5cm, scale=0.7, transform shape]
+        % Company
+        \node (Company) [rectangle, draw, fill=blue!20] {Company};
+        \node (User) [rectangle, draw, fill=blue!20, right=of Company] {User};
+        \node (Role) [rectangle, draw, fill=blue!20, right=of User] {Role};
+        
+        % Products
+        \node (Category) [rectangle, draw, fill=green!20, below=of Company] {Category};
+        \node (Product) [rectangle, draw, fill=green!20, right=of Category] {Product};
+        \node (ProductImage) [rectangle, draw, fill=green!20, right=of Product] {ProductImage};
+        
+        % Orders
+        \node (Order) [rectangle, draw, fill=yellow!20, below=of Category] {Order};
+        \node (OrderItem) [rectangle, draw, fill=yellow!20, right=of Order] {OrderItem};
+        \node (Payment) [rectangle, draw, fill=yellow!20, right=of OrderItem] {Payment};
+        
+        % Relationships
+        \draw [->] (Company) -- (User);
+        \draw [->] (User) .. controls +(0,-1) and +(0,1) .. (Role);
+        \draw [->] (Company) -- (Category);
+        \draw [->] (Category) -- (Product);
+        \draw [->] (Product) -- (ProductImage);
+        \draw [->] (Company) -- (Order);
+        \draw [->] (Order) -- (OrderItem);
+        \draw [->] (OrderItem) -- (Product);
+        \draw [->] (Order) -- (Payment);
+    \end{tikzpicture}
+    \caption{Diagrama Entidad-Relación Simplificado}
+    \label{fig:er_simplificado}
+\end{figure}
+
+\section{Entidades del Sistema}
+\label{sec:entidades}
+
+A continuación se detallan todas las entidades del sistema con sus atributos y relaciones.
+
+% -----------------------------------------------------------------------------
+% COMPANY
+% -----------------------------------------------------------------------------
+\subsection{Company (Empresa)}
+\label{sec:company}
+
+\begin{table}[ht]
+    \centering
+    \caption{Tabla: Company}
+    \begin{tabular}{@{}lll@{}}
+        \toprule
+        \textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+        \midrule
+        id & BIGINT (PK) & Identificador único \\
+        nit & VARCHAR(20) & NIT de la empresa \\
+        business\_name & VARCHAR(255) & Razón social \\
+        email & VARCHAR(255) & Email de contacto \\
+        phone & VARCHAR(20) & Teléfono \\
+        address & VARCHAR(500) & Dirección \\
+        logo\_url & VARCHAR(500) & URL del logo \\
+        active & BOOLEAN & Estado activo/inactivo \\
+        created\_at & DATETIME & Fecha de creación \\
+        updated\_at & DATETIME & Fecha de actualización \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\textbf{Relaciones:}
+\begin{itemize}
+    \item 1:N con User (una empresa tiene muchos usuarios).
+    \item 1:N con Order (una empresa tiene muchos pedidos).
+\end{itemize}
+
+% -----------------------------------------------------------------------------
+% USER
+% -----------------------------------------------------------------------------
+\subsection{User (Usuario)}
+\label{sec:user}
+
+\begin{table}[ht]
+    \centering
+    \caption{Tabla: User}
+    \begin{tabular}{@{}lll@{}}
+        \toprule
+        \textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+        \midrule
+        id & BIGINT (PK) & Identificador único \\
+        company\_id & BIGINT (FK) & Empresa asociada \\
+        username & VARCHAR(50) & Nombre de usuario \\
+        email & VARCHAR(255) & Email único \\
+        password\_hash & VARCHAR(255) & Hash de contraseña \\
+        phone & VARCHAR(20) & Teléfono \\
+        avatar\_url & VARCHAR(500) & URL del avatar \\
+        two\_factor\_enabled & BOOLEAN & 2FA habilitado \\
+        two\_factor\_secret & VARCHAR(255) & Secreto TOTP \\
+        password\_reset\_token & VARCHAR(255) & Token recuperación \\
+        password\_reset\_expires & DATETIME & Expiración token \\
+        active & BOOLEAN & Estado activo/inactivo \\
+        created\_at & DATETIME & Fecha de creación \\
+        updated\_at & DATETIME & Fecha de actualización \\
+        last\_login\_at & DATETIME & Último inicio de sesión \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\textbf{Relaciones:}
+\begin{itemize}
+    \item N:1 con Company.
+    \item N:M con Role (vía UserRole).
+    \item 1:N con Media.
+    \item 1:N con AuditLog.
+\end{itemize}
+
+% -----------------------------------------------------------------------------
+% ROLE
+% -----------------------------------------------------------------------------
+\subsection{Role (Rol)}
+\label{sec:role}
+
+\begin{table}[ht]
+    \centering
+    \caption{Tabla: Role}
+    \begin{tabular}{@{}lll@{}}
+        \toprule
+        \textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+        \midrule
+        id & BIGINT (PK) & Identificador único \\
+        name & VARCHAR(50) & Nombre del rol \\
+        description & VARCHAR(255) & Descripción \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\textbf{Valores posibles:} ADMIN, COMPANY\_ADMIN, BUYER, CONTENT\_MANAGER
+
+% -----------------------------------------------------------------------------
+% USERROLE
+% -----------------------------------------------------------------------------
+\subsection{UserRole (Usuario-Rol)}
+\label{sec:userrole}
+
+\begin{table}[ht]
+    \centering
+    \caption{Tabla: UserRole (intermedia)}
+    \begin{tabular}{@{}lll@{}}
+        \toprule
+        \textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+        \midrule
+        user\_id & BIGINT (FK) & Usuario \\
+        role\_id & BIGINT (FK) & Rol \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% -----------------------------------------------------------------------------
+% CATEGORY
+% -----------------------------------------------------------------------------
+\subsection{Category (Categoría)}
+\label{sec:category}
+
+\begin{table}[ht]
+    \centering
+    \caption{Tabla: Category}
+    \begin{tabular}{@{}lll@{}}
+        \toprule
+        \textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+        \midrule
+        id & BIGINT (PK) & Identificador único \\
+        name & VARCHAR(100) & Nombre de categoría \\
+        description & TEXT & Descripción \\
+        parent\_id & BIGINT (FK) & Categoría padre (subcategorías) \\
+        image\_url & VARCHAR(500) & Imagen de categoría \\
+        active & BOOLEAN & Estado activo/inactivo \\
+        created\_at & DATETIME & Fecha de creación \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\textbf{Relaciones:}
+\begin{itemize}
+    \item 1:N con Product (una categoría tiene muchos productos).
+    \item Autorreferencia para subcategorías.
+\end{itemize}
+
+% -----------------------------------------------------------------------------
+% PRODUCT
+% -----------------------------------------------------------------------------
+\subsection{Product (Producto)}
+\label{sec:product}
+
+\begin{table}[ht]
+    \centering
+    \caption{Tabla: Product}
+    \begin{tabular}{@{}lll@{}}
+        \toprule
+        \textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+        \midrule
+        id & BIGINT (PK) & Identificador único \\
+        category\_id & BIGINT (FK) & Categoría asociada \\
+        name & VARCHAR(255) & Nombre del producto \\
+        description & TEXT & Descripción detallada \\
+        base\_price & DECIMAL(10,2) & Precio base \\
+        price\_tiers & JSON & Precios por cantidad \\
+        stock & INT & Cantidad en inventario \\
+        sku & VARCHAR(50) & Código único de producto \\
+        weight & DECIMAL(10,2) & Peso (kg) \\
+        dimensions & VARCHAR(50) & Dimensiones \\
+        active & BOOLEAN & Estado activo/inactivo \\
+        created\_at & DATETIME & Fecha de creación \\
+        updated\_at & DATETIME & Fecha de actualización \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\textbf{Relaciones:}
+\begin{itemize}
+    \item N:1 con Category.
+    \item 1:N con ProductImage.
+    \item 1:N con OrderItem.
+\end{itemize}
+
+% -----------------------------------------------------------------------------
+% PRODUCTIMAGE
+% -----------------------------------------------------------------------------
+\subsection{ProductImage (Imagen de Producto)}
+\label{sec:productimage}
+
+\begin{table}[ht]
+    \centering
+    \caption{Tabla: ProductImage}
+    \begin{tabular}{@{}lll@{}}
+        \toprule
+        \textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+        \midrule
+        id & BIGINT (PK) & Identificador único \\
+        product\_id & BIGINT (FK) & Producto asociado \\
+        url & VARCHAR(500) & URL de la imagen \\
+        is\_primary & BOOLEAN & Es imagen principal \\
+        sort\_order & INT & Orden de visualización \\
+        created\_at & DATETIME & Fecha de creación \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% -----------------------------------------------------------------------------
+% ORDER
+% -----------------------------------------------------------------------------
+\subsection{Order (Pedido)}
+\label{sec:order}
+
+\begin{table}[ht]
+    \centering
+    \caption{Tabla: Order}
+    \begin{tabular}{@{}lll@{}}
+        \toprule
+        \textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+        \midrule
+        id & BIGINT (PK) & Identificador único \\
+        company\_id & BIGINT (FK) & Empresa asociada \\
+        user\_id & BIGINT (FK) & Usuario que creó el pedido \\
+        total\_amount & DECIMAL(10,2) & Monto total \\
+        status & ENUM & Estado del pedido \\
+        shipping\_address & VARCHAR(500) & Dirección de envío \\
+        notes & TEXT & Notas adicionales \\
+        created\_at & DATETIME & Fecha de creación \\
+        updated\_at & DATETIME & Fecha de actualización \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\textbf{Estados del pedido:}
+\begin{itemize}
+    \item CART - En carrito
+    \item PENDING\_PAYMENT - Pendiente de pago
+    \item PAID - Pagado
+    \item SHIPPED - Enviado
+    \item DELIVERED - Entregado
+    \item CANCELLED - Cancelado
+\end{itemize}
+
+\textbf{Relaciones:}
+\begin{itemize}
+    \item 1:N con OrderItem.
+    \item N:1 con Company.
+    \item N:1 con User.
+    \item 1:1 con Payment.
+\end{itemize}
+
+% -----------------------------------------------------------------------------
+% ORDERITEM
+% -----------------------------------------------------------------------------
+\subsection{OrderItem (Ítem del Pedido)}
+\label{sec:orderitem}
+
+\begin{table}[ht]
+    \centering
+    \caption{Tabla: OrderItem}
+    \begin{tabular}{@{}lll@{}}
+        \toprule
+        \textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+        \midrule
+        id & BIGINT (PK) & Identificador único \\
+        order\_id & BIGINT (FK) & Pedido asociado \\
+        product\_id & BIGINT (FK) & Producto asociado \\
+        product\_name & VARCHAR(255) & Snapshot nombre \\
+        product\_sku & VARCHAR(50) & Snapshot SKU \\
+        quantity & INT & Cantidad \\
+        unit\_price & DECIMAL(10,2) & Precio unitario (snapshot) \\
+        subtotal & DECIMAL(10,2) & Subtotal \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% -----------------------------------------------------------------------------
+% PAYMENT
+% -----------------------------------------------------------------------------
+\subsection{Payment (Pago)}
+\label{sec:payment}
+
+\begin{table}[ht]
+    \centering
+    \caption{Tabla: Payment}
+    \begin{tabular}{@{}lll@{}}
+        \toprule
+        \textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+        \midrule
+        id & BIGINT (PK) & Identificador único \\
+        order\_id & BIGINT (FK) & Pedido asociado \\
+        amount & DECIMAL(10,2) & Monto del pago \\
+        provider & VARCHAR(50) & Proveedor (STRIPE, MERCADOPAGO) \\
+        provider\_ref & VARCHAR(255) & Referencia del proveedor \\
+        payment\_method & VARCHAR(50) & Método de pago \\
+        status & ENUM & Estado del pago \\
+        created\_at & DATETIME & Fecha de creación \\
+        paid\_at & DATETIME & Fecha de pago \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\textbf{Estados del pago:}
+\begin{itemize}
+    \item PENDING - Pendiente
+    \item PAID - Pagado
+    \item FAILED - Fallido
+    \item REFUNDED - Reembolsado
+\end{itemize}
+
+% -----------------------------------------------------------------------------
+% MEDIA
+% -----------------------------------------------------------------------------
+\subsection{Media (Archivos)}
+\label{sec:media}
+
+\begin{table}[ht]
+    \centering
+    \caption{Tabla: Media}
+    \begin{tabular}{@{}lll@{}}
+        \toprule
+        \textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+        \midrule
+        id & BIGINT (PK) & Identificador único \\
+        url & VARCHAR(500) & URL del archivo \\
+        filename & VARCHAR(255) & Nombre del archivo \\
+        type & VARCHAR(50) & Tipo MIME \\
+        size & BIGINT & Tamaño en bytes \\
+        user\_id & BIGINT (FK) & Usuario que subió \\
+        created\_at & DATETIME & Fecha de creación \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% -----------------------------------------------------------------------------
+% REFRESHTOKEN
+% -----------------------------------------------------------------------------
+\subsection{RefreshToken (Token de Renovación)}
+\label{sec:refreshtoken}
+
+\begin{table}[ht]
+    \centering
+    \caption{Tabla: RefreshToken}
+    \begin{tabular}{@{}lll@{}}
+        \toprule
+        \textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+        \midrule
+        id & BIGINT (PK) & Identificador único \\
+        user\_id & BIGINT (FK) & Usuario asociado \\
+        token & VARCHAR(500) & Token de renovación \\
+        expires\_at & DATETIME & Fecha de expiración \\
+        created\_at & DATETIME & Fecha de creación \\
+        revoked & BOOLEAN & Estado revocado \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% -----------------------------------------------------------------------------
+% AUDITLOG
+% -----------------------------------------------------------------------------
+\subsection{AuditLog (Registro de Auditoría)}
+\label{sec:auditlog}
+
+\begin{table}[ht]
+    \centering
+    \caption{Tabla: AuditLog}
+    \begin{tabular}{@{}lll@{}}
+        \toprule
+        \textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+        \midrule
+        id & BIGINT (PK) & Identificador único \\
+        user\_id & BIGINT (FK) & Usuario que realizó la acción \\
+        action & VARCHAR(50) & Acción realizada \\
+        entity & VARCHAR(50) & Entidad afectada \\
+        entity\_id & BIGINT & ID de la entidad \\
+        old\_value & JSON & Valor anterior \\
+        new\_value & JSON & Valor nuevo \\
+        ip\_address & VARCHAR(45) & Dirección IP \\
+        user\_agent & VARCHAR(500) & Navegador/dispositivo \\
+        timestamp & DATETIME & Fecha y hora \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% -----------------------------------------------------------------------------
+% CONTENTBLOCK
+% -----------------------------------------------------------------------------
+\subsection{ContentBlock (Bloque de Contenido - CMS)}
+\label{sec:contentblock}
+
+\begin{table}[ht]
+    \centering
+    \caption{Tabla: ContentBlock}
+    \begin{tabular}{@{}lll@{}}
+        \toprule
+        \textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+        \midrule
+        id & BIGINT (PK) & Identificador único \\
+        section & VARCHAR(50) & Sección (homepage, about, etc.) \\
+        key & VARCHAR(100) & Clave única \\
+        content & TEXT & Contenido de texto \\
+        image\_url & VARCHAR(500) & URL de imagen \\
+        video\_url & VARCHAR(500) & URL de video \\
+        sort\_order & INT & Orden de visualización \\
+        active & BOOLEAN & Estado activo/inactivo \\
+        created\_at & DATETIME & Fecha de creación \\
+        updated\_at & DATETIME & Fecha de actualización \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% -----------------------------------------------------------------------------
+% SETTING
+% -----------------------------------------------------------------------------
+\subsection{Setting (Configuración)}
+\label{sec:setting}
+
+\begin{table}[ht]
+    \centering
+    \caption{Tabla: Setting}
+    \begin{tabular}{@{}lll@{}}
+        \toprule
+        \textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+        \midrule
+        id & BIGINT (PK) & Identificador único \\
+        key & VARCHAR(100) & Clave de configuración \\
+        value & TEXT & Valor (texto o JSON) \\
+        type & ENUM & Tipo (STRING, NUMBER, BOOLEAN, JSON) \\
+        description & VARCHAR(255) & Descripción \\
+        created\_at & DATETIME & Fecha de creación \\
+        updated\_at & DATETIME & Fecha de actualización \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% -----------------------------------------------------------------------------
+% NOTIFICATIONTEMPLATE
+% -----------------------------------------------------------------------------
+\subsection{NotificationTemplate (Plantilla de Notificación)}
+\label{sec:notificationtemplate}
+
+\begin{table}[ht]
+    \centering
+    \caption{Tabla: NotificationTemplate}
+    \begin{tabular}{@{}lll@{}}
+        \toprule
+        \textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+        \midrule
+        id & BIGINT (PK) & Identificador único \\
+        type & VARCHAR(50) & Tipo de notificación \\
+        subject & VARCHAR(255) & Asunto \\
+        body & TEXT & Cuerpo (con placeholders) \\
+        is\_active & BOOLEAN & Esta activo \\
+        created\_at & DATETIME & Fecha de creación \\
+        updated\_at & DATETIME & Fecha de actualización \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% -----------------------------------------------------------------------------
+% USERNOTIFICATION
+% -----------------------------------------------------------------------------
+\subsection{UserNotification (Notificación de Usuario)}
+\label{sec:usernotification}
+
+\begin{table}[ht]
+    \centering
+    \caption{Tabla: UserNotification}
+    \begin{tabular}{@{}lll@{}}
+        \toprule
+        \textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+        \midrule
+        id & BIGINT (PK) & Identificador único \\
+        user\_id & BIGINT (FK) & Usuario destinatario \\
+        title & VARCHAR(255) & Título \\
+        message & TEXT & Mensaje \\
+        type & ENUM & Tipo (INFO, SUCCESS, WARNING, ERROR) \\
+        is\_read & BOOLEAN & Leída \\
+        link\_url & VARCHAR(500) & Enlace relacionado \\
+        created\_at & DATETIME & Fecha de creación \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% -----------------------------------------------------------------------------
+% COMPANYADDRESS
+% -----------------------------------------------------------------------------
+\subsection{CompanyAddress (Dirección de Empresa)}
+\label{sec:companyaddress}
+
+\begin{table}[ht]
+    \centering
+    \caption{Tabla: CompanyAddress}
+    \begin{tabular}{@{}lll@{}}
+        \toprule
+        \textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+        \midrule
+        id & BIGINT (PK) & Identificador único \\
+        company\_id & BIGINT (FK) & Empresa asociada \\
+        label & VARCHAR(50) & Etiqueta (Principal, Bodega, etc.) \\
+        address & VARCHAR(500) & Dirección \\
+        city & VARCHAR(100) & Ciudad \\
+        department & VARCHAR(100) & Departamento \\
+        zip\_code & VARCHAR(20) & Código postal \\
+        is\_default & BOOLEAN & Es dirección predeterminada \\
+        active & BOOLEAN & Estado activo \\
+        created\_at & DATETIME & Fecha de creación \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% -----------------------------------------------------------------------------
+% SHIPPINGZONE
+% -----------------------------------------------------------------------------
+\subsection{ShippingZone (Zona de Envío)}
+\label{sec:shippingzone}
+
+\begin{table}[ht]
+    \centering
+    \caption{Tabla: ShippingZone}
+    \begin{tabular}{@{}lll@{}}
+        \toprule
+        \textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+        \midrule
+        id & BIGINT (PK) & Identificador único \\
+        name & VARCHAR(100) & Nombre de la zona \\
+        department & VARCHAR(100) & Departamento/Región \\
+        delivery\_cost & DECIMAL(10,2) & Costo de envío \\
+        estimated\_days & INT & Días estimados \\
+        active & BOOLEAN & Estado activo/inactivo \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% -----------------------------------------------------------------------------
+% FAVORITEPRODUCT
+% -----------------------------------------------------------------------------
+\subsection{FavoriteProduct (Producto Favorito)}
+\label{sec:favoriteproduct}
+
+\begin{table}[ht]
+    \centering
+    \caption{Tabla: FavoriteProduct}
+    \begin{tabular}{@{}lll@{}}
+        \toprule
+        \textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+        \midrule
+        id & BIGINT (PK) & Identificador único \\
+        user\_id & BIGINT (FK) & Usuario \\
+        product\_id & BIGINT (FK) & Producto \\
+        created\_at & DATETIME & Fecha de creación \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% -----------------------------------------------------------------------------
+% QUOTE
+% -----------------------------------------------------------------------------
+\subsection{Quote (Cotización)}
+\label{sec:quote}
+
+\begin{table}[ht]
+    \centering
+    \caption{Tabla: Quote}
+    \begin{tabular}{@{}lll@{}}
+        \toprule
+        \textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+        \midrule
+        id & BIGINT (PK) & Identificador único \\
+        company\_id & BIGINT (FK) & Empresa solicitante \\
+        user\_id & BIGINT (FK) & Usuario solicitante \\
+        status & ENUM & Estado (PENDING, APPROVED, REJECTED, EXPIRED) \\
+        notes & TEXT & Notas adicionales \\
+        valid\_until & DATE & Validez hasta \\
+        created\_at & DATETIME & Fecha de creación \\
+        updated\_at & DATETIME & Fecha de actualización \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% -----------------------------------------------------------------------------
+% QUOTEITEM
+% -----------------------------------------------------------------------------
+\subsection{QuoteItem (Ítem de Cotización)}
+\label{sec:quoteitem}
+
+\begin{table}[ht]
+    \centering
+    \caption{Tabla: QuoteItem}
+    \begin{tabular}{@{}lll@{}}
+        \toprule
+        \textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+        \midrule
+        id & BIGINT (PK) & Identificador único \\
+        quote\_id & BIGINT (FK) & Cotización asociada \\
+        product\_id & BIGINT (FK) & Producto cotizado \\
+        quantity & INT & Cantidad solicitada \\
+        unit\_price & DECIMAL(10,2) & Precio cotizado \\
+        notes & TEXT & Notas \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% -----------------------------------------------------------------------------
+% SALESREPORT
+% -----------------------------------------------------------------------------
+\subsection{SalesReport (Reporte de Ventas)}
+\label{sec:salesreport}
+
+\begin{table}[ht]
+    \centering
+    \caption{Tabla: SalesReport}
+    \begin{tabular}{@{}lll@{}}
+        \toprule
+        \textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+        \midrule
+        id & BIGINT (PK) & Identificador único \\
+        report\_type & ENUM & Tipo (DAILY, MONTHLY, YEARLY, CUSTOM) \\
+        company\_id & BIGINT (FK) & Empresa (null para todos) \\
+        start\_date & DATE & Fecha de inicio \\
+        end\_date & DATE & Fecha de fin \\
+        total\_orders & INT & Total de pedidos \\
+        total\_revenue & DECIMAL(15,2) & Ingresos totales \\
+        total\_products\_sold & INT & Productos vendidos \\
+        average\_order\_value & DECIMAL(10,2) & Valor promedio \\
+        top\_products & JSON & Productos más vendidos \\
+        generated\_by & BIGINT (FK) & Usuario que generó \\
+        created\_at & DATETIME & Fecha de creación \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% ==============================================================================
+% CAPÍTULO 6: FLUJOS DEL SISTEMA
+% ==============================================================================
+\chapter{Flujos del Sistema}
+\label{cap:flujos}
+
+\section{Flujo de Autenticación}
+\label{flujo:auth}
+
+\begin{enumerate}
+    \item Usuario se registra o inicia sesión.
+    \item \textbf{(Opcional) 2FA}: Si está habilitado, solicitar código TOTP.
+    \item Generar access token + refresh token.
+    \item Acceso al sistema.
+\end{enumerate}
+
+\section{Flujo de Recuperación de Contraseña}
+\label{flujo:password}
+
+\begin{enumerate}
+    \item Usuario solicita ``Olvidé mi contraseña''.
+    \item Sistema genera token de recuperación (expiración: 1 hora).
+    \item Email con enlace de recuperación.
+    \item Usuario ingresa nueva contraseña.
+    \item Invalidar tokens anteriores.
+\end{enumerate}
+
+\section{Flujo de Compra}
+\label{flujo:compra}
+
+\begin{enumerate}
+    \item Empresa se registra en el sistema.
+    \item Usuario inicia sesión con JWT.
+    \item Explora productos (catálogo dinámico desde BD).
+    \item Agrega productos al carrito.
+    \item Crea pedido.
+    \item Paga por pasarela.
+    \item Pedido confirmado.
+    \item Auditoría registrada.
+\end{enumerate}
+
+\section{Flujo 2FA (Autenticación de Dos Factores)}
+\label{flujo:2fa}
+
+\begin{enumerate}
+    \item Usuario habilita 2FA desde su perfil.
+    \item Sistema genera secreto TOTP.
+    \item Se muestra QR para Google Authenticator.
+    \item Usuario verifica con código inicial.
+    \item En login, después de contraseña:
+    \begin{itemize}
+        \item Si 2FA habilitado $\rightarrow$ solicitar código.
+        \item Si no $\rightarrow$ continuar normalmente.
+    \end{itemize}
+\end{enumerate}
+
+\section{Flujo Cambio de Contraseña}
+\label{flujo:cambio_password}
+
+\begin{enumerate}
+    \item Usuario va a su perfil.
+    \item Clic en ``Cambiar contraseña''.
+    \item Ingresa contraseña actual + nueva contraseña.
+    \item Sistema valida contraseña actual.
+    \item Actualiza hash de contraseña.
+    \item \textbf{Invalidar todos los tokens activos} (logout de todos los dispositivos).
+    \item Enviar email de notificación.
+\end{enumerate}
+
+\section{Flujo Cerrar Sesión (Logout)}
+\label{flujo:logout}
+
+\begin{enumerate}
+    \item Usuario hace clic en ``Cerrar sesión''.
+    \item Frontend envía solicitud al backend.
+    \item Backend marca refresh token como revoke.
+    \item Frontend elimina access token del storage.
+    \item Redireccionar a login.
+    \item (Opcional) Opción de ``Cerrar todas las sesiones''.
+\end{enumerate}
+
+% ==============================================================================
+% CAPÍTULO 7: PANEL DE ADMINISTRACIÓN
+% ==============================================================================
+\chapter{Panel de Administración}
+\label{cap:admin}
+
+\section{Funcionalidades del Administrador}
+
+\subsection{Gestión de Contenido (CMS)}
+\begin{itemize}
+    \item Editar texto de página principal.
+    \item Gestionar banners e imágenes.
+    \item Actualizar About Us, Contacto.
+    \item Editar políticas y términos.
+    \item Gestionar footer.
+\end{itemize}
+
+\subsection{Gestión de Productos}
+\begin{itemize}
+    \item CRUD completo de productos.
+    \item CRUD de categorías.
+    \item Subida de imágenes múltiples.
+    \item Gestionar precio base y precios por volumen.
+    \item Control de inventario.
+\end{itemize}
+
+\subsection{Gestión de Empresas y Usuarios}
+\begin{itemize}
+    \item Ver empresas registradas.
+    \item Activar/desactivar empresas.
+    \item Gestionar usuarios por empresa.
+    \item Asignar roles.
+\end{itemize}
+
+\subsection{Gestión de Pedidos}
+\begin{itemize}
+    \item Ver todos los pedidos.
+    \item Cambiar estados.
+    \item Procesar devoluciones.
+\end{itemize}
+
+\subsection{Configuración de Seguridad}
+\begin{itemize}
+    \item Habilitar/deshabilitar 2FA.
+    \item Configurar políticas de contraseña.
+    \item Ver logs de auditoría.
+\end{itemize}
+
+\subsection{Dashboard y Reportes}
+\begin{itemize}
+    \item \textbf{Estadísticas de ventas}
+    \begin{itemize}
+        \item Gráfico de ventas diarias/semanales/mensuales.
+        \item Ingresos totales.
+        \item Cantidad de pedidos.
+        \item Valor promedio por pedido.
+    \end{itemize}
+    \item \textbf{Reportes por empresa}
+    \begin{itemize}
+        \item Ventas por empresa.
+        \item Empresas más activas.
+        \item Empresas nuevas.
+    \end{itemize}
+    \item \textbf{Reporte de inventario}
+    \begin{itemize}
+        \item Productos más vendidos.
+        \item Stock bajo.
+        \item Productos sin movimiento.
+    \end{itemize}
+    \item \textbf{KPI's principales}
+    \begin{itemize}
+        \item Ticket promedio.
+        \item Tasa de conversión.
+        \item Usuarios activos.
+    \end{itemize}
+    \item \textbf{Exportar reportes} (Excel, PDF).
+\end{itemize}
+
+\subsection{Gestión de Cotizaciones}
+\begin{itemize}
+    \item Ver solicitudes de cotización.
+    \item Aprobar/rechazar cotizaciones.
+    \item Definir precios especiales.
+    \item Enviar cotizaciones por email.
+\end{itemize}
+
+\subsection{Notificaciones del Sistema}
+\begin{itemize}
+    \item Enviar notificaciones a usuarios.
+    \item Notificaciones masivas.
+    \item Historial de notificaciones.
+\end{itemize}
+
+% ==============================================================================
+% CAPÍTULO 8: NOTAS DE IMPLEMENTACIÓN
+% ==============================================================================
+\chapter{Notas de Implementación}
+\label{cap:implementacion}
+
+\section{Seguridad}
+\begin{itemize}
+    \item Usar \textbf{bcrypt} o \textbf{Argon2id} para contraseñas.
+    \item Tokens JWT cortos (15-30 min access, 7 días refresh).
+    \item Almacenar refresh tokens en BD con capacidad de revocación.
+    \item Registrar todas las acciones sensibles.
+\end{itemize}
+
+\section{CMS}
+\begin{itemize}
+    \item ContentBlock usa pares section/key para identificar contenido.
+    \item Frontend consume estos valores dinámicamente.
+    \item Admin panel proporciona editor WYSIWYG simple.
+\end{itemize}
+
+\section{Productos}
+\begin{itemize}
+    \item Precio base + precios por cantidad (price\_tiers JSON).
+    \item SKU único por producto.
+    \item Control de stock transaccional.
+\end{itemize}
+
+% ==============================================================================
+% CAPÍTULO 9: ALCANCE MVP (1 MES)
+% ==============================================================================
+\chapter{Alcance MVP - Versión 1.0}
+\label{cap:mvp}
+
+\alert{IMPORTANTE:} 1 mes solo = Proyecto reducido obligatorio
+
+\section{Semana 1: Base y Autenticación}
+\begin{itemize}
+    \item[ ] Estructura del proyecto Spring Boot + React.
+    \item[ ] Entities básicas: User, Company, Role.
+    \item[ ] Login JWT sin 2FA.
+    \item[ ] Registro de empresas.
+    \item[ ] Logout básico.
+\end{itemize}
+
+\section{Semana 2: Productos y Carrito}
+\begin{itemize}
+    \item[ ] CRUD Products + Categories.
+    \item[ ] Imágenes (solo 1 por producto).
+    \item[ ] Carrito en memoria (no persistente).
+    \item[ ] Crear Order.
+\end{itemize}
+
+\section{Semana 3: Pagos e Inventario}
+\begin{itemize}
+    \item[ ] Integrar 1 pasarela (Stripe o MercadoPago).
+    \item[ ] Webhook de confirmación.
+    \item[ ] Actualizar stock al comprar.
+    \item[ ] Historial de pedidos.
+\end{itemize}
+
+\section{Semana 4: Admin Básico y Pulir}
+\begin{itemize}
+    \item[ ] Admin: ver pedidos.
+    \item[ ] Admin: activar/desactivar productos.
+    \item[ ] Login empresa básico.
+    \item[ ] Deploy básico.
+\end{itemize}
+
+\section{No Incluido en V1}
+\begin{alert}{FUERA DEL ALCANCE MVP:}
+\begin{itemize}
+    \item 2FA.
+    \item CMS/ContentBlock.
+    \item Dashboard de reportes.
+    \item Cotizaciones B2B.
+    \item Wishlist.
+    \item Carrito persistente.
+    \item Múltiples imágenes.
+    \item Notificaciones.
+    \item Configuraciones globales.
+\end{itemize}
+\end{alert}
+
+\section{Prioridades de Desarrollo}
+\begin{enumerate}
+    \item \textbf{Día 1-7}: Login + Registro Empresa + Productos.
+    \item \textbf{Día 8-14}: Carrito + Order + Payment.
+    \item \textbf{Día 15-21}: Admin básico + Inventario.
+    \item \textbf{Día 22-30}: Testing + Fixes + Deploy.
+\end{enumerate}
+
+% ==============================================================================
+% APÉNDICES
+% ==============================================================================
+\appendix
+\chapter{Tablas Requeridas del Sistema}
+\label{apendice:tablas}
+
+\begin{table}[ht]
+    \centering
+    \caption{Lista completa de tablas del sistema}
+    \begin{tabular}{cll}
+        \toprule
+        \textbf{Nº} & \textbf{Tabla} & \textbf{Descripción} \\
+        \midrule
+        1 & Company & Empresas registradas \\
+        2 & User & Usuarios del sistema (con campos 2FA) \\
+        3 & Role & Roles del sistema \\
+        4 & UserRole & Relación usuario-rol \\
+        5 & Category & Categorías de productos \\
+        6 & Product & Productos disponibles \\
+        7 & ProductImage & Imágenes de productos \\
+        8 & Order & Pedidos de compra \\
+        9 & OrderItem & Ítems del pedido \\
+        10 & Payment & Registro de pagos \\
+        11 & Media & Archivos multimedia \\
+        12 & RefreshToken & Tokens de renovación \\
+        13 & AuditLog & Registro de auditoría \\
+        14 & ContentBlock & Contenido CMS \\
+        15 & Setting & Configuraciones globales \\
+        16 & NotificationTemplate & Plantillas de notificación \\
+        17 & UserNotification & Notificaciones de usuario \\
+        18 & CompanyAddress & Direcciones de empresa \\
+        19 & ShippingZone & Zonas de envío \\
+        20 & FavoriteProduct & Productos favoritos \\
+        21 & Quote & Cotizaciones B2B \\
+        22 & QuoteItem & Ítems de cotización \\
+        23 & SalesReport & Reportes de ventas \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% ==============================================================================
+% REFERENCIAS
+% ==============================================================================
+\chapter{Referencias}
+\label{cap:referencias}
+
+\begin{thebibliography}{99}
+    
+    \bibitem{spring-boot} 
+    \textbf{Spring Boot Reference Documentation}\\
+    \textit{Pivotal Software, Inc.}\\
+    \href{https://spring.io/projects/spring-boot}{https://spring.io/projects/spring-boot}
+    
+    \bibitem{spring-security}
+    \textbf{Spring Security Reference}\\
+    \textit{Pivotal Software, Inc.}\\
+    \href{https://spring.io/projects/spring-security}{https://spring.io/projects/spring-security}
+    
+    \bibitem{jwt}
+    \textbf{JWT (JSON Web Tokens)}\\
+    \textit{Internet Engineering Task Force (IETF)}\\
+    \href{https://jwt.io}{https://jwt.io}
+    
+    \bibitem{totp}
+    \textbf{TOTP: Time-based One-Time Passwords}\\
+    \textit{RFC 6238}\\
+    \href{https://tools.ietf.org/html/rfc6238}{https://tools.ietf.org/html/rfc6238}
+    
+    \bibitem{react}
+    \textbf{React Documentation}\\
+    \textit{Meta Platforms, Inc.}\\
+    \href{https://react.dev}{https://react.dev}
+    
+    \bibitem{vite}
+    \textbf{Vite - Next Generation Frontend Tooling}\\
+    \textit{Evan You}\\
+    \href{https://vitejs.dev}{https://vitejs.dev}
+    
+    \bibitem{mercado-pago}
+    \textbf{MercadoPago Developers}\\
+    \textit{Mercado Libre}\\
+    \href{https://www.mercadopago.com.co/developers}{https://www.mercadopago.com.co/developers}
+    
+    \bibitem{bcrypt}
+    \textbf{BCrypt Password Hashing Algorithm}\\
+    \textit{ProPublica}\\
+    \href{https://www.propublica.org/article/bcrypt-password-hashing}{https://www.propublica.org}
+    
+\end{thebibliography}
+
+% ==============================================================================
+% FIN DEL DOCUMENTO
+% ==============================================================================
+\end{document}

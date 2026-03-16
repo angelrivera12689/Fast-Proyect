@@ -1,5 +1,6 @@
 package com.app.ventas_api.config;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
@@ -24,6 +25,7 @@ public class AuditConfig {
      * Proveedor de auditoría que obtiene el usuario actual
      * desde el contexto de seguridad
      */
+    @Bean
     public AuditorAware<String> auditorProvider() {
         return () -> {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

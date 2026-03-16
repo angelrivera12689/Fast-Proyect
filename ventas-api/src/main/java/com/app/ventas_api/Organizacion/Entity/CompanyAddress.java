@@ -30,6 +30,12 @@ public class CompanyAddress {
     @Column(name = "zip_code")
     private String zipCode;
 
+    @Column(name = "latitude", precision = 10)
+    private Double latitude;
+
+    @Column(name = "longitude", precision = 10)
+    private Double longitude;
+
     @Column(name = "contact_name")
     private String contactName;
 
@@ -120,6 +126,22 @@ public class CompanyAddress {
 
     public void setZipCode(String zipCode) {
         this.zipCode = zipCode;
+    }
+
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
+    }
+
+    public Double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
     }
 
     public String getContactName() {
