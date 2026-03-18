@@ -1,11 +1,53 @@
-import { useCart } from '../context/CartContext';
+import { useState } from 'react';
+import { useCart } from '../context/useCart';
+import { getWishlist } from '../services/wishlist';
+import { isAuthenticated } from '../services/auth';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
  
 const fmt = (n) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n);
  
 export default function CartPage({ onNavigate }) {
-  const { items, removeItem, updateQty, total, count, clearCart } = useCart();
+  const { items, removeItem, updateQty, total, count, clearCart, addItem } = useCart();
+  const [loadingFavorites, setLoadingFavorites] = useState(false);
+  const [message, setMessage] = useState(null);
+
+  const handleLoadFavorites = async () => {
+    if (!isAuthenticated()) {
+      setMessage('Debes iniciar sesión para cargar favoritos');
+      setTimeout(() => setMessage(null), 3000);
+      return;
+    }
+
+    try {
+      setLoadingFavorites(true);
+      const wishlist = await getWishlist();
+      
+      if (!wishlist || wishlist.length === 0) {
+        setMessage('No tienes productos en favoritos');
+        setTimeout(() => setMessage(null), 3000);
+        return;
+      }
+
+      // Add each wishlist product to cart
+      let addedCount = 0;
+      for (const item of wishlist) {
+        if (item.product && item.product.stock > 0) {
+          addItem(item.product, 1);
+          addedCount++;
+        }
+      }
+
+      setMessage(`Se agregaron ${addedCount} productos de favoritos`);
+      setTimeout(() => setMessage(null), 3000);
+    } catch (err) {
+      console.error('Error loading favorites:', err);
+      setMessage('Error al cargar favoritos');
+      setTimeout(() => setMessage(null), 3000);
+    } finally {
+      setLoadingFavorites(false);
+    }
+  };
  
   return (
     <div className="min-h-screen bg-[#050d1a]">
@@ -15,6 +57,16 @@ export default function CartPage({ onNavigate }) {
         <div className="container mx-auto max-w-5xl">
  
           {/* Header */}
+          {/* Message Toast */}
+          {message && (
+            <div className="fixed top-20 right-8 z-50 animate-fadeIn">
+              <div className={`px-4 py-3 rounded-xl shadow-lg backdrop-blur-md border text-sm font-medium ${
+                message.includes('Error') || message.includes('Debes') || message.includes('No tienes') ? 'bg-red-500/20 text-red-400 border-red-500/30' : 'bg-teal-500/20 text-teal-300 border-teal-500/30'}`}>
+                {message}
+              </div>
+            </div>
+          )}
+
           <div className="mb-8">
             <button onClick={() => onNavigate('catalog')}
               className="flex items-center gap-2 text-teal-400/60 hover:text-teal-300 text-sm mb-4 transition-colors">
@@ -34,10 +86,25 @@ export default function CartPage({ onNavigate }) {
               <div className="text-6xl mb-4">📦</div>
               <p className="text-white text-xl font-light mb-2">Tu carrito está vacío</p>
               <p className="text-teal-400/40 text-sm mb-6">Agrega productos desde el catálogo</p>
-              <button onClick={() => onNavigate('catalog')}
-                className="px-8 py-3 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-xl text-sm font-semibold hover:shadow-[0_0_20px_rgba(20,184,166,0.4)] transition-all">
-                Ir al catálogo
-              </button>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <button onClick={() => onNavigate('catalog')}
+                  className="px-8 py-3 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-xl text-sm font-semibold hover:shadow-[0_0_20px_rgba(20,184,166,0.4)] transition-all">
+                  Ir al catálogo
+                </button>
+                <button onClick={handleLoadFavorites} disabled={loadingFavorites}
+                  className="px-8 py-3 bg-pink-500/15 text-pink-300 border border-pink-500/30 rounded-xl text-sm font-semibold hover:bg-pink-500/25 transition-all flex items-center justify-center gap-2 disabled:opacity-50">
+                  {loadingFavorites ? (
+                    <span><span className="w-4 h-4 border-2 border-pink-400 border-t-transparent rounded-full animate-spin inline-block mr-2"></span>Cargando...</span>
+                  ) : (
+                    <span><svg className="w-5 h-5 inline-block mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" /></svg></span>
+                  )}
+                  Cargar favoritos
+                </button>
+                <button onClick={() => onNavigate('wishlist')}
+                  className="px-8 py-3 bg-teal-500/10 text-teal-300 border border-teal-500/20 rounded-xl text-sm font-semibold hover:bg-teal-500/20 transition-all">
+                  Ver favoritos
+                </button>
+              </div>
             </div>
           ) : (
             <div className="flex flex-col lg:flex-row gap-8">
@@ -98,6 +165,21 @@ export default function CartPage({ onNavigate }) {
                 <button onClick={clearCart}
                   className="self-start text-xs text-teal-500/40 hover:text-red-400 transition-colors mt-2">
                   Vaciar carrito
+                </button>
+
+                <button onClick={handleLoadFavorites} disabled={loadingFavorites}
+                  className="self-start mt-2 ml-4 text-xs text-pink-400/60 hover:text-pink-300 transition-colors flex items-center gap-1 disabled:opacity-50">
+                  {loadingFavorites ? (
+                    <span><span className="w-3 h-3 border border-pink-400 border-t-transparent rounded-full animate-spin inline-block mr-1"></span>Cargando...</span>
+                  ) : (
+                    <span><svg className="w-3.5 h-3.5 inline-block mr-1" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" /></svg></span>
+                  )}
+                  Cargar favoritos
+                </button>
+                <button onClick={() => onNavigate('wishlist')}
+                  className="self-start mt-2 ml-4 text-xs text-teal-400/60 hover:text-teal-300 transition-colors flex items-center gap-1">
+                  <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" /></svg>
+                  Ver favoritos
                 </button>
               </div>
  

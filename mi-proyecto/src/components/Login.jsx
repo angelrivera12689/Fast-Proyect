@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { login } from '../services/auth';
+import { useCart } from '../context/useCart';
 
 export default function Login({ onNavigate }) {
   const [form, setForm] = useState({ usernameOrEmail: '', password: '' });
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const { setAuthCheck } = useCart();
 
   const handleChange = (e) => {
     setError('');
@@ -21,6 +23,9 @@ export default function Login({ onNavigate }) {
       // Login function handles token storage internally
       // eslint-disable-next-line no-unused-vars
       const result = await login(form);
+      
+      // Notificar al carrito que el usuario inició sesión
+      setAuthCheck(prev => prev + 1);
       
       // Login exitoso - navegar al home para que la navbar se actualice
       onNavigate('home');

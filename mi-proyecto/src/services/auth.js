@@ -18,6 +18,7 @@ const AUTH_ENDPOINTS = {
   TWO_FACTOR_ENABLE: `${API_BASE_URL}/api/auth/2fa/enable`,
   TWO_FACTOR_DISABLE: `${API_BASE_URL}/api/auth/2fa/disable`,
   TWO_FACTOR_VERIFY: `${API_BASE_URL}/api/auth/2fa/verify`,
+  USER_PROFILE: `${API_BASE_URL}/api/auth/me`,
 };
 
 // Keys para localStorage
@@ -25,6 +26,7 @@ const STORAGE_KEYS = {
   TOKEN: 'fast_auth_token',
   REFRESH_TOKEN: 'fast_refresh_token',
   USER: 'fast_user_data',
+  COMPANY: 'fast_company_data',
 };
 
 // ============================================
@@ -71,6 +73,21 @@ export const setUser = (userData) => {
 export const getUser = () => {
   const userData = localStorage.getItem(STORAGE_KEYS.USER);
   return userData ? JSON.parse(userData) : null;
+};
+
+/**
+ * Guarda datos de la empresa en localStorage
+ */
+export const setCompany = (companyData) => {
+  localStorage.setItem(STORAGE_KEYS.COMPANY, JSON.stringify(companyData));
+};
+
+/**
+ * Obtiene datos de la empresa desde localStorage
+ */
+export const getCompany = () => {
+  const companyData = localStorage.getItem(STORAGE_KEYS.COMPANY);
+  return companyData ? JSON.parse(companyData) : null;
 };
 
 /**
@@ -126,6 +143,7 @@ export const login = async (credentials) => {
         id: data.userId,
         username: data.username,
         email: data.email,
+        role: data.role,
         twoFactorEnabled: data.twoFactorRequired === false,
       });
     }
@@ -163,6 +181,7 @@ export const register = async (userData) => {
         id: data.userId,
         username: data.username,
         email: data.email,
+        role: data.role,
       });
     }
 
@@ -420,6 +439,35 @@ export const verifyTwoFactor = async (data) => {
   }
 };
 
+/**
+ * Obtiene el perfil del usuario actual con datos de la empresa
+ * @returns {Promise<Object>} Datos del perfil del usuario
+ */
+export const getUserProfile = async () => {
+  try {
+    const response = await fetch(AUTH_ENDPOINTS.USER_PROFILE, {
+      method: 'GET',
+      headers: getAuthenticatedHeaders(),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || 'Error al obtener perfil');
+    }
+
+    // Guardar datos de empresa en localStorage
+    if (result.company) {
+      setCompany(result.company);
+    }
+
+    return result;
+  } catch (error) {
+    console.error('Error en getUserProfile:', error);
+    throw error;
+  }
+};
+
 // ============================================
 // Función para verificar si el usuario está autenticado
 // ============================================
@@ -451,6 +499,7 @@ export default {
   enableTwoFactor,
   disableTwoFactor,
   verifyTwoFactor,
+  getUserProfile,
   // Estado de autenticación
   isAuthenticated,
 };

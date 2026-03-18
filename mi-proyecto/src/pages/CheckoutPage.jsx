@@ -1,12 +1,14 @@
-import { useState } from 'react';
-import { useCart } from '../context/CartContext';
+import { useState, useEffect } from 'react';
+import { useCart } from '../context/useCart';
+import { getUser, getUserProfile } from '../services/auth';
+// import { checkout } from '../services/orders'; // TODO: usar cuando se implemente checkout real
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
 const fmt = (n) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n);
 
 export default function CheckoutPage({ onNavigate }) {
-  const { items, total, count } = useCart();
+  const { items, total, count, clearCart } = useCart();
 
   const [form, setForm] = useState({
     razonSocial: '',
@@ -19,16 +21,86 @@ export default function CheckoutPage({ onNavigate }) {
     notas: '',
   });
   const [loading, setLoading] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
+
+  // Cargar datos del perfil del usuario al iniciar
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const profile = await getUserProfile();
+        
+        // Pre-llenar formulario con datos del perfil
+        if (profile) {
+          setForm(prev => ({
+            ...prev,
+            // Datos de la empresa
+            razonSocial: profile.company?.businessName || prev.razonSocial,
+            nit: profile.company?.nit || prev.nit,
+            email: profile.email || profile.company?.email || prev.email,
+            telefono: profile.phone || profile.company?.phone || prev.telefono,
+            direccion: profile.company?.address || prev.direccion,
+          }));
+        }
+      } catch (error) {
+        console.error('Error cargando perfil:', error);
+        // Si falla, usamos los datos guardados localmente
+        const user = getUser();
+        if (user) {
+          setForm(prev => ({
+            ...prev,
+            email: user.email || prev.email,
+          }));
+        }
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+    
+    loadProfile();
+  }, []);
 
   const handleChange = (e) => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
-  const handlePay = (e) => {
+  const handlePay = async (e) => {
     e.preventDefault();
     setLoading(true);
-    // TODO: llamar tu backend → crear preferencia MP → redirigir a mp.link
-    // Ejemplo: fetch('/api/create-preference', { method: 'POST', body: JSON.stringify({ items, buyer: form }) })
-    //   .then(r => r.json()).then(d => window.location.href = d.init_point)
-    setTimeout(() => setLoading(false), 2000); // simulación visual
+
+    try {
+      const user = getUser();
+      if (!user) {
+        throw new Error('Debes iniciar sesión para realizar el pedido');
+      }
+
+      // Preparar datos para el checkout
+      // eslint-disable-next-line no-unused-vars
+      const shippingAddress = `${form.direccion}, ${form.ciudad}`;
+      // eslint-disable-next-line no-unused-vars
+      const notes = form.notas;
+
+      // Por ahora, simulamos el checkout ya que el flujo de Mercado Pago
+      // requeriría integración adicional con la API de Mercado Pago
+      // TODO: Integrar con Mercado Pago para crear preferencia de pago
+      
+      // Ejemplo de cómo sería con el backend:
+      // const order = await checkout(cartId, shippingAddress, notes);
+      // const preference = await createPaymentPreference(order.id);
+      // window.location.href = preference.init_point;
+
+      // Simulación por ahora - mostrar éxito
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      alert('Pedido realizado con éxito! (Simulación)');
+      
+      // Limpiar carrito después del pedido
+      await clearCart();
+      
+      // Navegar a home
+      onNavigate('home');
+    } catch (error) {
+      console.error('Error en checkout:', error);
+      alert(error.message || 'Error al procesar el pedido');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const isValid = form.razonSocial && form.nit && form.email && form.telefono && form.ciudad && form.direccion;
@@ -74,38 +146,52 @@ export default function CheckoutPage({ onNavigate }) {
               {/* Datos empresa */}
               <div className="bg-gradient-to-br from-[#0d2137]/80 to-[#071525]/80 border border-teal-500/15 rounded-2xl p-6">
                 <p className="text-teal-300 text-xs tracking-[0.2em] uppercase font-semibold mb-5">Datos de la empresa</p>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div className="sm:col-span-2">
-                    <label className="text-teal-400/60 text-xs mb-1.5 block">Razón Social *</label>
-                    <input name="razonSocial" value={form.razonSocial} onChange={handleChange} required
-                      placeholder="Farmacia El Bienestar S.A.S."
-                      className="w-full bg-[#071525] border border-teal-500/20 rounded-xl px-4 py-2.5 text-sm text-teal-100 placeholder-teal-500/25 outline-none focus:border-teal-400/50 transition-colors" />
+                {profileLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="flex items-center gap-3 text-teal-400/60">
+                      <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      <span className="text-sm">Cargando datos...</span>
+                    </div>
                   </div>
-                  <div>
-                    <label className="text-teal-400/60 text-xs mb-1.5 block">NIT *</label>
-                    <input name="nit" value={form.nit} onChange={handleChange} required
-                      placeholder="900.123.456-7"
-                      className="w-full bg-[#071525] border border-teal-500/20 rounded-xl px-4 py-2.5 text-sm text-teal-100 placeholder-teal-500/25 outline-none focus:border-teal-400/50 transition-colors" />
-                  </div>
-                  <div>
-                    <label className="text-teal-400/60 text-xs mb-1.5 block">Registro Sanitario</label>
-                    <input name="regSanitario" value={form.regSanitario} onChange={handleChange}
-                      placeholder="INVIMA 2024-DES-001"
-                      className="w-full bg-[#071525] border border-teal-500/20 rounded-xl px-4 py-2.5 text-sm text-teal-100 placeholder-teal-500/25 outline-none focus:border-teal-400/50 transition-colors" />
-                  </div>
-                  <div>
-                    <label className="text-teal-400/60 text-xs mb-1.5 block">Correo electrónico *</label>
-                    <input name="email" type="email" value={form.email} onChange={handleChange} required
-                      placeholder="compras@farmacia.com"
-                      className="w-full bg-[#071525] border border-teal-500/20 rounded-xl px-4 py-2.5 text-sm text-teal-100 placeholder-teal-500/25 outline-none focus:border-teal-400/50 transition-colors" />
-                  </div>
-                  <div>
-                    <label className="text-teal-400/60 text-xs mb-1.5 block">Teléfono *</label>
-                    <input name="telefono" value={form.telefono} onChange={handleChange} required
-                      placeholder="+57 300 123 4567"
-                      className="w-full bg-[#071525] border border-teal-500/20 rounded-xl px-4 py-2.5 text-sm text-teal-100 placeholder-teal-500/25 outline-none focus:border-teal-400/50 transition-colors" />
-                  </div>
-                </div>
+                ) : (
+                  <>
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div className="sm:col-span-2">
+                        <label className="text-teal-400/60 text-xs mb-1.5 block">Razón Social *</label>
+                        <input name="razonSocial" value={form.razonSocial} onChange={handleChange} required
+                          placeholder="Farmacia El Bienestar S.A.S."
+                          className="w-full bg-[#071525] border border-teal-500/20 rounded-xl px-4 py-2.5 text-sm text-teal-100 placeholder-teal-500/25 outline-none focus:border-teal-400/50 transition-colors" />
+                      </div>
+                      <div>
+                        <label className="text-teal-400/60 text-xs mb-1.5 block">NIT *</label>
+                        <input name="nit" value={form.nit} onChange={handleChange} required
+                          placeholder="900.123.456-7"
+                          className="w-full bg-[#071525] border border-teal-500/20 rounded-xl px-4 py-2.5 text-sm text-teal-100 placeholder-teal-500/25 outline-none focus:border-teal-400/50 transition-colors" />
+                      </div>
+                      <div>
+                        <label className="text-teal-400/60 text-xs mb-1.5 block">Registro Sanitario</label>
+                        <input name="regSanitario" value={form.regSanitario} onChange={handleChange}
+                          placeholder="INVIMA 2024-DES-001"
+                          className="w-full bg-[#071525] border border-teal-500/20 rounded-xl px-4 py-2.5 text-sm text-teal-100 placeholder-teal-500/25 outline-none focus:border-teal-400/50 transition-colors" />
+                      </div>
+                      <div>
+                        <label className="text-teal-400/60 text-xs mb-1.5 block">Correo electrónico *</label>
+                        <input name="email" type="email" value={form.email} onChange={handleChange} required
+                          placeholder="compras@farmacia.com"
+                          className="w-full bg-[#071525] border border-teal-500/20 rounded-xl px-4 py-2.5 text-sm text-teal-100 placeholder-teal-500/25 outline-none focus:border-teal-400/50 transition-colors" />
+                      </div>
+                      <div>
+                        <label className="text-teal-400/60 text-xs mb-1.5 block">Teléfono *</label>
+                        <input name="telefono" value={form.telefono} onChange={handleChange} required
+                          placeholder="+57 300 123 4567"
+                          className="w-full bg-[#071525] border border-teal-500/20 rounded-xl px-4 py-2.5 text-sm text-teal-100 placeholder-teal-500/25 outline-none focus:border-teal-400/50 transition-colors" />
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Dirección */}

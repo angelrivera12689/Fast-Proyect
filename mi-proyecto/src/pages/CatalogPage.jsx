@@ -1,6 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { getProducts, getActiveCategories } from '../services/products';
-import { useCart } from '../context/CartContext';
+import { addToWishlist, removeFromWishlist, getWishlist } from '../services/wishlist';
+import { useCart } from '../context/useCart';
+import { isAuthenticated } from '../services/auth';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Sidebar from '../components/Sidebar';
@@ -51,6 +53,9 @@ export default function CatalogPage({ onNavigate }) {
   const [sortBy, setSortBy] = useState('nombre');
   const [addedId, setAddedId] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [wishlistProductIds, setWishlistProductIds] = useState(new Set());
+  const [loadingWishlist, setLoadingWishlist] = useState(false);
+  const [wishlistMessage, setWishlistMessage] = useState(null);
   
   // Estado para filtro de fecha de vencimiento
   const [expirationFilter, setExpirationFilter] = useState('todos');
@@ -75,6 +80,21 @@ export default function CatalogPage({ onNavigate }) {
         } catch (catErr) {
           console.warn('No se pudieron cargar categorías del backend:', catErr);
           // Usar categorías de los productos como fallback
+        }
+        
+        
+        // Cargar wishlist del usuario si está autenticado
+        if (isAuthenticated()) {
+          try {
+            setLoadingWishlist(true);
+            const wishlistData = await getWishlist();
+            const wishlistIds = new Set(wishlistData.map(item => item.productId));
+            setWishlistProductIds(wishlistIds);
+          } catch (err) {
+            console.warn('No se pudo cargar la wishlist:', err);
+          } finally {
+            setLoadingWishlist(false);
+          }
         }
         
         setError(null);
@@ -171,6 +191,37 @@ export default function CatalogPage({ onNavigate }) {
     setTimeout(() => setAddedId(null), 1500);
   };
 
+  const handleToggleWishlist = async (productId) => {
+    if (!isAuthenticated()) {
+      setWishlistMessage('Debes iniciar sesión para agregar a favoritos');
+      setTimeout(() => setWishlistMessage(null), 3000);
+      return;
+    }
+    
+    const isInWishlist = wishlistProductIds.has(productId);
+    
+    try {
+      if (isInWishlist) {
+        await removeFromWishlist(productId);
+        setWishlistProductIds(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(productId);
+          return newSet;
+        });
+        setWishlistMessage('Producto eliminado de favoritos');
+      } else {
+        await addToWishlist(productId);
+        setWishlistProductIds(prev => new Set(prev).add(productId));
+        setWishlistMessage('Producto agregado a favoritos');
+      }
+      setTimeout(() => setWishlistMessage(null), 3000);
+    } catch (err) {
+      console.error('Error toggling wishlist:', err);
+      setWishlistMessage('Error al actualizar favoritos');
+      setTimeout(() => setWishlistMessage(null), 3000);
+    }
+  };
+
   const resetFilters = () => {
     setSelectedCategory('Todos');
     setSelectedLab('Todos');
@@ -195,6 +246,28 @@ export default function CatalogPage({ onNavigate }) {
   return (
     <div className="min-h-screen bg-[#050d1a]">
       <Navbar onNavigate={onNavigate} cartCount={count} />
+
+      {/* Wishlist Toast Notification */}
+      {wishlistMessage && (
+        <div className="fixed top-20 right-8 z-50 animate-fadeIn">
+          <div className={`px-4 py-3 rounded-xl shadow-lg backdrop-blur-md border text-sm font-medium
+            ${wishlistMessage.includes('Error') || wishlistMessage.includes('Debes')
+              ? 'bg-red-500/20 text-red-400 border-red-500/30'
+              : 'bg-teal-500/20 text-teal-300 border-teal-500/30'}`}>
+            {wishlistMessage}
+          </div>
+        </div>
+      )}
+
+      {/* Wishlist Loading Indicator */}
+      {loadingWishlist && (
+        <div className="fixed top-20 right-8 z-50">
+          <div className="px-4 py-3 rounded-xl shadow-lg backdrop-blur-md border bg-teal-500/20 text-teal-300 border-teal-500/30 text-sm font-medium flex items-center gap-2">
+            <div className="w-3 h-3 border-2 border-teal-300 border-t-transparent rounded-full animate-spin"></div>
+            Cargando favoritos...
+          </div>
+        </div>
+      )}
 
       {/* Header */}
       <div className="pt-24 pb-10 px-8 bg-gradient-to-b from-[#071525] to-[#050d1a] border-b border-teal-500/10">
@@ -273,7 +346,21 @@ export default function CatalogPage({ onNavigate }) {
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
               {filtered.map(product => (
                 <div key={product.id}
-                  className="group bg-gradient-to-br from-[#0d2137] to-[#071525] border border-teal-500/15 rounded-2xl p-5 flex flex-col hover:border-teal-400/35 hover:shadow-[0_0_25px_rgba(20,184,166,0.12)] transition-all duration-400">
+                  className="group bg-gradient-to-br from-[#0d2137] to-[#071525] border border-teal-500/15 rounded-2xl p-5 flex flex-col hover:border-teal-400/35 hover:shadow-[0_0_25px_rgba(20,184,166,0.12)] transition-all duration-400 relative">
+
+                  {/* Wishlist Heart Button */}
+                  <button
+                    onClick={() => handleToggleWishlist(product.id)}
+                    className={`absolute top-3 right-3 z-10 p-2 rounded-full transition-all duration-300
+                      ${wishlistProductIds.has(product.id) 
+                        ? 'bg-pink-500/20 text-pink-400 hover:bg-pink-500/30' 
+                        : 'bg-teal-500/10 text-teal-400/50 hover:bg-teal-500/20 hover:text-teal-300'}`}
+                    title={wishlistProductIds.has(product.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+                  >
+                    <svg className="w-5 h-5" fill={wishlistProductIds.has(product.id) ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                  </button>
 
                   {/* Icon */}
                   <div className="flex justify-center mb-4">

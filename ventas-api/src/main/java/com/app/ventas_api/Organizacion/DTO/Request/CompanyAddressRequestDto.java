@@ -2,28 +2,38 @@ package com.app.ventas_api.Organizacion.DTO.Request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 public class CompanyAddressRequestDto {
 
-    @NotBlank(message = "Label is required")
+    @NotBlank(message = "La etiqueta es requerida")
+    @Size(min = 2, max = 100, message = "La etiqueta debe tener entre 2 y 100 caracteres")
     private String label;
 
-    @NotBlank(message = "Address is required")
+    @NotBlank(message = "La dirección es requerida")
+    @Size(min = 5, max = 500, message = "La dirección debe tener entre 5 y 500 caracteres")
     private String address;
 
-    @NotBlank(message = "City is required")
+    @NotBlank(message = "La ciudad es requerida")
+    @Size(min = 2, max = 100, message = "La ciudad debe tener entre 2 y 100 caracteres")
     private String city;
 
+    @Size(min = 2, max = 100, message = "El departamento debe tener entre 2 y 100 caracteres")
     private String department;
 
+    @Size(min = 3, max = 20, message = "El código postal debe tener entre 3 y 20 caracteres")
     private String zipCode;
 
+    @NotNull(message = "La latitud es requerida")
     private Double latitude;
 
+    @NotNull(message = "La longitud es requerida")
     private Double longitude;
 
+    @Size(min = 2, max = 150, message = "El nombre de contacto debe tener entre 2 y 150 caracteres")
     private String contactName;
 
+    @Size(min = 7, max = 20, message = "El teléfono de contacto debe tener entre 7 y 20 caracteres")
     private String contactPhone;
 
     private Boolean isDefault;

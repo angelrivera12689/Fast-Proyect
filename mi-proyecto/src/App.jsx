@@ -10,6 +10,7 @@ import RegisterPage from './pages/RegisterPage';
 import AdminPage from './pages/AdminPage';
 import AdminLoginPage from './pages/AdminLoginPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import WishlistPage from './pages/WishlistPage';
 
 // Componente para rutas protegidas
 function ProtectedRoute({ children, onNavigate }) {
@@ -32,6 +33,7 @@ export default function App() {
       case 'forgot-password': return <ForgotPasswordPage onNavigate={setPage} />;
       case 'admin':      return <AdminPage      onNavigate={setPage} />;
       case 'admin-login': return <AdminLoginPage onNavigate={setPage} />;
+      case 'wishlist':   return <WishlistPage   onNavigate={setPage} />;
       default:           return <Home           onNavigate={setPage} />;
     }
   };

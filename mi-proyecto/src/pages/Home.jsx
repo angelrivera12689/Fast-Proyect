@@ -5,7 +5,7 @@ import AboutUs from '../components/AboutUs';
 import Reviews from '../components/Reviews';
 import Footer from '../components/Footer';
 import Contact from '../components/Contact';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../context/useCart';
  
 export default function Home({ onNavigate }) {
   const { count } = useCart();

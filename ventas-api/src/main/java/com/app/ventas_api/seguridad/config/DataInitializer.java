@@ -478,24 +478,44 @@ public class DataInitializer implements CommandLineRunner {
             companyRepository.save(empresa);
             logger.info("DataInitializer: Created company: Farmacia La Salud SAS");
             
-            // Crear usuario de prueba
+            // Obtener roles
+            Role adminRole = roleRepository.findByName("ADMIN").orElse(null);
             Role userRole = roleRepository.findByName("USER").orElse(null);
             
-            if (userRole != null) {
-                // Buscar si el usuario admin ya existe
-                User usuario = userRepository.findByUsername("admin").orElse(null);
-                if (usuario == null) {
-                    usuario = User.builder()
+            // Crear usuario ADMIN
+            if (adminRole != null) {
+                User adminUser = userRepository.findByUsername("admin").orElse(null);
+                if (adminUser == null) {
+                    adminUser = User.builder()
                             .username("admin")
                             .email("admin@farmacialasalud.com")
-                            .passwordHash(passwordEncoder.encode("admin123"))
+                            .passwordHash(passwordEncoder.encode("Admin123"))
+                            .phone("3001234567")
+                            .company(empresa)
+                            .active(true)
+                            .build();
+                    adminUser.getRoles().add(adminRole);
+                    userRepository.save(adminUser);
+                    logger.info("DataInitializer: Created ADMIN user: admin / Admin123");
+                }
+            }
+            
+            // Crear usuario de prueba regular
+            if (userRole != null) {
+                // Buscar si el usuario admin ya existe
+                User usuario = userRepository.findByUsername("usuario").orElse(null);
+                if (usuario == null) {
+                    usuario = User.builder()
+                            .username("usuario")
+                            .email("usuario@farmacialasalud.com")
+                            .passwordHash(passwordEncoder.encode("Usuario123"))
                             .phone("3001234567")
                             .company(empresa)
                             .active(true)
                             .build();
                     usuario.getRoles().add(userRole);
                     userRepository.save(usuario);
-                    logger.info("DataInitializer: Created user: admin / admin123");
+                    logger.info("DataInitializer: Created USER user: usuario / Usuario123");
                 }
                 
                 // Buscar si el usuario angelfaridr1 ya existe
@@ -504,7 +524,7 @@ public class DataInitializer implements CommandLineRunner {
                     angelfarid = User.builder()
                             .username("angelfaridr1")
                             .email("angelfaridr1@gmail.com")
-                            .passwordHash(passwordEncoder.encode("password123"))
+                            .passwordHash(passwordEncoder.encode("Password123"))
                             .phone("3009876543")
                             .company(empresa)
                             .active(true)
@@ -512,7 +532,7 @@ public class DataInitializer implements CommandLineRunner {
                             .build();
                     angelfarid.getRoles().add(userRole);
                     userRepository.save(angelfarid);
-                    logger.info("DataInitializer: Created user: angelfaridr1 / password123");
+                    logger.info("DataInitializer: Created user: angelfaridr1 / Password123");
                 } else {
                     // Actualizar 2FA si el usuario ya existe
                     angelfarid.setTwoFactorEnabled(false);

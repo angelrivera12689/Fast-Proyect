@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import com.app.ventas_api.Productos.DTO.Request.LaboratoryRequestDto;
 import com.app.ventas_api.Productos.DTO.Response.LaboratoryResponseDto;
@@ -38,14 +39,14 @@ public class LaboratoryController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<LaboratoryResponseDto>> create(@RequestBody LaboratoryRequestDto request) {
+    public ResponseEntity<ApiResponse<LaboratoryResponseDto>> create(@Valid @RequestBody LaboratoryRequestDto request) {
         LaboratoryResponseDto laboratory = laboratoryService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new ApiResponse<>(true, "Laboratorio creado exitosamente", laboratory));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<LaboratoryResponseDto>> update(@PathVariable Long id, @RequestBody LaboratoryRequestDto request) {
+    public ResponseEntity<ApiResponse<LaboratoryResponseDto>> update(@PathVariable Long id, @Valid @RequestBody LaboratoryRequestDto request) {
         LaboratoryResponseDto laboratory = laboratoryService.update(id, request);
         return ResponseEntity.ok(new ApiResponse<>(true, "Laboratorio actualizado exitosamente", laboratory));
     }

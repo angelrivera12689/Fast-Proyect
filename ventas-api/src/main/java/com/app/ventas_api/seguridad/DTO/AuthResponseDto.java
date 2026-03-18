@@ -18,6 +18,7 @@ public class AuthResponseDto {
     private Long userId;
     private String username;
     private String email;
+    private String role;
     private String message;
     private Boolean twoFactorRequired;
 }

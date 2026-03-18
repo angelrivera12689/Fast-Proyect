@@ -306,6 +306,46 @@ public class AuthController {
         }
     }
     
+    /**
+     * GET /api/auth/me - Get current user profile with company data
+     */
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(@RequestHeader("Authorization") String authHeader) {
+        try {
+            Long userId = extractUserIdFromToken(authHeader);
+            Optional<User> userOpt = userRepository.findById(userId);
+            
+            if (userOpt.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            User user = userOpt.get();
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", user.getId());
+            response.put("username", user.getUsername());
+            response.put("email", user.getEmail());
+            response.put("phone", user.getPhone());
+            response.put("role", user.getRole() != null ? user.getRole().name() : null);
+            
+            // Include company data if user has a company
+            if (user.getCompany() != null) {
+                Map<String, Object> company = new HashMap<>();
+                company.put("id", user.getCompany().getId());
+                company.put("nit", user.getCompany().getNit());
+                company.put("businessName", user.getCompany().getBusinessName());
+                company.put("email", user.getCompany().getEmail());
+                company.put("phone", user.getCompany().getPhone());
+                company.put("address", user.getCompany().getAddress());
+                company.put("logoUrl", user.getCompany().getLogoUrl());
+                response.put("company", company);
+            }
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+    
     // Helper method to extract user ID from token
     private Long extractUserIdFromToken(String authHeader) {
         try {

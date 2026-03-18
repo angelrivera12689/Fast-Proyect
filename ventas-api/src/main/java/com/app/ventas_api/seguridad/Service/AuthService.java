@@ -62,6 +62,16 @@ public class AuthService {
     }
     
     /**
+     * Extrae el nombre del primer rol del usuario
+     */
+    private String getUserRole(User user) {
+        if (user.getRoles() != null && !user.getRoles().isEmpty()) {
+            return user.getRoles().iterator().next().getName();
+        }
+        return "USER";
+    }
+    
+    /**
      * Register new user
      */
     public AuthResponseDto register(RegisterRequestDto request) {
@@ -113,6 +123,7 @@ public class AuthService {
                 .userId(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
+                .role(getUserRole(user))
                 .message("Registration successful")
                 .build();
     }
@@ -231,6 +242,7 @@ public class AuthService {
                         .userId(user.getId())
                         .username(user.getUsername())
                         .email(user.getEmail())
+                        .role(getUserRole(user))
                         .message("2FA_REQUIRED")
                         .twoFactorRequired(true)
                         .build();
@@ -259,6 +271,7 @@ public class AuthService {
                 .userId(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
+                .role(getUserRole(user))
                 .message("Login successful")
                 .build();
     }
@@ -377,6 +390,7 @@ public class AuthService {
                 .userId(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
+                .role(getUserRole(user))
                 .message("Token refreshed successfully")
                 .build();
     }
