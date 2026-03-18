@@ -19,7 +19,7 @@ public class ApiResponse<T> {
     private LocalDateTime timestamp;
     private Map<String, Object> metadata;
     
-    private ApiResponse(boolean success, String message, T data) {
+    public ApiResponse(boolean success, String message, T data) {
         this.success = success;
         this.message = message;
         this.data = data;

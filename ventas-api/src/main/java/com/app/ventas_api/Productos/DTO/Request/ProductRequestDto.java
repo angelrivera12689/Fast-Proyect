@@ -39,7 +39,8 @@ public class ProductRequestDto {
     private String dimensions;
     
     // ===== Atributos de Medicamentos =====
-    private String laboratory;  // Laboratorio
+    private Long laboratoryId;  // ID del laboratorio
+    private String laboratoryName;  // Nombre del laboratorio (para compatibilidad)
     private String registrationNumber;  // Registro INVIMA
     private String dosage;  // Dosis (500mg, 10ml)
     private LocalDate expirationDate;  // Fecha de vencimiento

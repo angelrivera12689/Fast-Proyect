@@ -2,6 +2,8 @@ import { useState } from 'react';
 import AdminSidebar from '../components/Admin/AdminSidebar';
 import AdminDashboard from '../components/Admin/AdminDashboard';
 import AdminProducts from '../components/Admin/AdminProducts';
+import AdminCategories from '../components/Admin/AdminCategories';
+import AdminLaboratories from '../components/Admin/AdminLaboratories';
 import AdminOrders from '../components/Admin/AdminOrders';
 import AdminClients from '../components/Admin/AdminClients';
 import AdminHero from '../components/Admin/AdminHero';
@@ -11,11 +13,13 @@ export default function AdminPage({ onNavigate }) {
 
   const renderSection = () => {
     switch (section) {
-      case 'products': return <AdminProducts />;
-      case 'orders':   return <AdminOrders />;
-      case 'clients':  return <AdminClients />;
-      case 'hero':     return <AdminHero />;
-      default:         return <AdminDashboard />;
+      case 'products':   return <AdminProducts />;
+      case 'categories': return <AdminCategories />;
+      case 'laboratories': return <AdminLaboratories />;
+      case 'orders':     return <AdminOrders />;
+      case 'clients':    return <AdminClients />;
+      case 'hero':       return <AdminHero />;
+      default:           return <AdminDashboard />;
     }
   };
 

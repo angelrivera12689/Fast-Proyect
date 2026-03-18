@@ -21,6 +21,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString(exclude = {"company", "passwordHash", "refreshTokens", "roles", "passwordResetToken", "passwordResetExpires", "twoFactorSecret"})
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class User {
     

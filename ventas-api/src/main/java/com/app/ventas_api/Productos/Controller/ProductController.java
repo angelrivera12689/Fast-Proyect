@@ -24,9 +24,11 @@ import jakarta.validation.Valid;
 
 import com.app.ventas_api.Productos.DTO.Request.ProductRequestDto;
 import com.app.ventas_api.Productos.Entity.Category;
+import com.app.ventas_api.Productos.Entity.Laboratory;
 import com.app.ventas_api.Productos.Entity.Product;
 import com.app.ventas_api.Productos.IService.IProductService;
 import com.app.ventas_api.Productos.IRepository.ICategoryRepository;
+import com.app.ventas_api.Productos.IRepository.ILaboratoryRepository;
 
 /**
  * PRODUCTOS - Controller
@@ -46,6 +48,9 @@ public class ProductController {
     
     @Autowired
     private ICategoryRepository categoryRepository;
+    
+    @Autowired
+    private ILaboratoryRepository laboratoryRepository;
     
     // ===== Métodos de lectura - USER, COMPANY_ADMIN, ADMIN =====
     
@@ -157,8 +162,12 @@ public class ProductController {
             // Fetch Category entity
             Category category = categoryRepository.findById(request.getCategoryId()).orElse(null);
             
+            // Fetch Laboratory entity
+            Laboratory laboratory = laboratoryRepository.findById(request.getLaboratoryId()).orElse(null);
+            
             Product product = Product.builder()
                     .category(category)
+                    .laboratory(laboratory)
                     .name(request.getName())
                     .description(request.getDescription())
                     .basePrice(request.getBasePrice())
@@ -168,7 +177,6 @@ public class ProductController {
                     .weight(request.getWeight())
                     .dimensions(request.getDimensions())
                     // Atributos de medicamentos
-                    .laboratory(request.getLaboratory())
                     .registrationNumber(request.getRegistrationNumber())
                     .dosage(request.getDosage())
                     .expirationDate(request.getExpirationDate())
@@ -194,8 +202,12 @@ public class ProductController {
             // Fetch Category entity
             Category category = categoryRepository.findById(request.getCategoryId()).orElse(null);
             
+            // Fetch Laboratory entity
+            Laboratory laboratory = laboratoryRepository.findById(request.getLaboratoryId()).orElse(null);
+            
             Product product = Product.builder()
                     .category(category)
+                    .laboratory(laboratory)
                     .name(request.getName())
                     .description(request.getDescription())
                     .basePrice(request.getBasePrice())
@@ -205,7 +217,6 @@ public class ProductController {
                     .weight(request.getWeight())
                     .dimensions(request.getDimensions())
                     // Atributos de medicamentos
-                    .laboratory(request.getLaboratory())
                     .registrationNumber(request.getRegistrationNumber())
                     .dosage(request.getDosage())
                     .expirationDate(request.getExpirationDate())
@@ -218,7 +229,9 @@ public class ProductController {
                     .build();
             
             productService.update(id, product);
-            return ResponseEntity.ok(product);
+            // Devolver el producto actualizado desde la base de datos
+            Product updatedProduct = productService.findById(id).orElseThrow();
+            return ResponseEntity.ok(updatedProduct);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }

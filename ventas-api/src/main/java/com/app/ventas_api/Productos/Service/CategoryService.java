@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.app.ventas_api.Productos.Entity.Category;
 import com.app.ventas_api.Productos.IRepository.ICategoryRepository;
@@ -22,16 +23,19 @@ public class CategoryService implements ICategoryService {
     private ICategoryRepository repository;
     
     @Override
+    @Transactional(readOnly = true)
     public List<Category> all() throws Exception {
         return repository.findAll();
     }
     
     @Override
+    @Transactional(readOnly = true)
     public List<Category> findByStateTrue() throws Exception {
         return repository.findByActive(true);
     }
     
     @Override
+    @Transactional(readOnly = true)
     public Optional<Category> findById(Long id) throws Exception {
         Optional<Category> op = repository.findById(id);
         if (op.isEmpty()) {
@@ -41,6 +45,7 @@ public class CategoryService implements ICategoryService {
     }
     
     @Override
+    @Transactional
     public Category save(Category entity) throws Exception {
         try {
             // Fetch Parent category entity if set
@@ -60,6 +65,7 @@ public class CategoryService implements ICategoryService {
     }
     
     @Override
+    @Transactional
     public void update(Long id, Category entity) throws Exception {
         Optional<Category> op = repository.findById(id);
         if (op.isEmpty()) {
@@ -79,6 +85,7 @@ public class CategoryService implements ICategoryService {
     }
     
     @Override
+    @Transactional
     public void delete(Long id) throws Exception {
         Optional<Category> op = repository.findById(id);
         if (op.isEmpty()) {
@@ -91,27 +98,32 @@ public class CategoryService implements ICategoryService {
     }
     
     @Override
+    @Transactional(readOnly = true)
     public Optional<Category> findByName(String name) throws Exception {
         return repository.findByName(name);
     }
     
     @Override
+    @Transactional(readOnly = true)
     public boolean existsByName(String name) {
         return repository.existsByName(name);
     }
     
     @Override
+    @Transactional(readOnly = true)
     public List<Category> findByActive(Boolean active) {
         return repository.findByActive(active);
     }
     
     @Override
+    @Transactional(readOnly = true)
     public List<Category> findByParentId(Long parentId) {
         return repository.findByParent_Id(parentId);
     }
     
     // Métodos con lógica de negocio encapsulada
     @Override
+    @Transactional
     public Category create(String name, String description, Long parentId, String imageUrl, Boolean active) throws Exception {
         Category category = Category.builder()
                 .name(name)
@@ -131,6 +143,7 @@ public class CategoryService implements ICategoryService {
     }
     
     @Override
+    @Transactional
     public void updateCategory(Long id, String name, String description, Long parentId, String imageUrl, Boolean active) throws Exception {
         Category existing = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Category", "id", id));

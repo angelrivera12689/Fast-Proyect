@@ -1,4 +1,7 @@
-import { CATEGORIES, LABS } from '../services/Productsdata';
+
+
+const CATEGORIES = [];
+const LABS = [];
 
 const fmt = (n) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n);
 
@@ -8,7 +11,10 @@ export default function Sidebar({
   selectedLab, setSelectedLab,
   priceRange, setPriceRange,
   stockFilter, setStockFilter,
+  expirationFilter, setExpirationFilter,
   onReset,
+  categories = [],
+  labs = [],
 }) {
   return (
     <aside className="w-full flex flex-col gap-6">
@@ -32,8 +38,8 @@ export default function Sidebar({
       {/* Categoría */}
       <div>
         <p className="text-teal-300 text-xs tracking-[0.2em] uppercase font-semibold mb-3">Categoría</p>
-        <div className="flex flex-col gap-1.5">
-          {CATEGORIES.map(c => (
+        <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto">
+          {categories.map(c => (
             <button key={c} onClick={() => setSelectedCategory(c)}
               className={`text-left text-sm px-3 py-1.5 rounded-lg transition-all duration-200
                 ${selectedCategory === c
@@ -48,8 +54,8 @@ export default function Sidebar({
       {/* Laboratorio */}
       <div>
         <p className="text-teal-300 text-xs tracking-[0.2em] uppercase font-semibold mb-3">Laboratorio</p>
-        <div className="flex flex-col gap-1.5">
-          {LABS.map(l => (
+        <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto">
+          {labs.map(l => (
             <button key={l} onClick={() => setSelectedLab(l)}
               className={`text-left text-sm px-3 py-1.5 rounded-lg transition-all duration-200
                 ${selectedLab === l
@@ -83,6 +89,20 @@ export default function Sidebar({
           <button key={val} onClick={() => setStockFilter(val)}
             className={`w-full text-left text-sm px-3 py-1.5 rounded-lg mb-1 transition-all duration-200
               ${stockFilter === val
+                ? 'bg-teal-500/20 text-teal-300 border border-teal-500/30'
+                : 'text-teal-100/50 hover:text-teal-200 hover:bg-teal-500/10'}`}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* Fecha de vencimiento */}
+      <div>
+        <p className="text-teal-300 text-xs tracking-[0.2em] uppercase font-semibold mb-3">Vencimiento</p>
+        {[['todos', 'Todos'], ['validos', 'Válidos (>3 meses)'], ['proximos', 'Próximos (3 meses)'], ['vencidos', 'Vencidos']].map(([val, label]) => (
+          <button key={val} onClick={() => setExpirationFilter(val)}
+            className={`w-full text-left text-sm px-3 py-1.5 rounded-lg mb-1 transition-all duration-200
+              ${expirationFilter === val
                 ? 'bg-teal-500/20 text-teal-300 border border-teal-500/30'
                 : 'text-teal-100/50 hover:text-teal-200 hover:bg-teal-500/10'}`}>
             {label}

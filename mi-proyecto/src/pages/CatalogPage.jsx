@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { products } from '../services/Productsdata';
+import { useState, useMemo, useEffect } from 'react';
+import { getProducts, getActiveCategories } from '../services/products';
 import { useCart } from '../context/CartContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -38,6 +38,10 @@ function MedIcon() {
 
 export default function CatalogPage({ onNavigate }) {
   const { addItem, count } = useCart();
+  
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [selectedLab, setSelectedLab] = useState('Todos');
@@ -47,25 +51,122 @@ export default function CatalogPage({ onNavigate }) {
   const [sortBy, setSortBy] = useState('nombre');
   const [addedId, setAddedId] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  
+  // Estado para filtro de fecha de vencimiento
+  const [expirationFilter, setExpirationFilter] = useState('todos');
+  const [categoriesFromBackend, setCategoriesFromBackend] = useState([]);
+
+  // Cargar productos y categorías del backend
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        
+        // Cargar productos
+        const productsData = await getProducts();
+        setProducts(productsData);
+        
+        // Cargar categorías del backend
+        try {
+          const categoriesData = await getActiveCategories();
+          // Transformar categorías del backend al formato esperado
+          const categoryNames = categoriesData.map(cat => cat.name);
+          setCategoriesFromBackend(['Todos', ...categoryNames]);
+        } catch (catErr) {
+          console.warn('No se pudieron cargar categorías del backend:', catErr);
+          // Usar categorías de los productos como fallback
+        }
+        
+        setError(null);
+      } catch (err) {
+        console.error('Error loading products:', err);
+        setError('No se pudieron cargar los productos. Intenta más tarde.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Obtener labs únicos de los productos
+  const labs = useMemo(() => {
+    const uniqueLabs = [...new Set(products.map(p => p.lab).filter(Boolean))];
+    return ['Todos', ...uniqueLabs];
+  }, [products]);
+
+  // Obtener categorías (del backend con fallback a productos)
+  const categories = useMemo(() => {
+    // Si hay categorías del backend, usarlas
+    if (categoriesFromBackend.length > 1) {
+      return categoriesFromBackend;
+    }
+    // Fallback: extraer categorías de los productos
+    const uniqueCategories = [...new Set(products.map(p => p.category).filter(Boolean))];
+    return ['Todos', ...uniqueCategories];
+  }, [products, categoriesFromBackend]);
 
   const filtered = useMemo(() => {
-    let list = products;
+    let list = [...products];
+    
+    // Filtro por búsqueda (nombre)
     if (search) list = list.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
+    
+    // Filtro por categoría
     if (selectedCategory !== 'Todos') list = list.filter(p => p.category === selectedCategory);
+    
+    // Filtro por laboratorio
     if (selectedLab !== 'Todos') list = list.filter(p => p.lab === selectedLab);
+    
+    // Filtro por rango de precio
     list = list.filter(p => p.price >= priceRange[0] && p.price <= priceRange[1]);
+    
+    // Filtro por stock
     if (stockFilter === 'disponible') list = list.filter(p => p.stock > 0);
     if (stockFilter === 'bajo') list = list.filter(p => p.stock > 0 && p.stock < 100);
+    
+    // Filtro por fecha de vencimiento
+    if (expirationFilter !== 'todos') {
+      const today = new Date();
+      const threeMonthsFromNow = new Date();
+      threeMonthsFromNow.setMonth(today.getMonth() + 3);
+      
+      if (expirationFilter === 'vencidos') {
+        // Productos vencidos
+        list = list.filter(p => {
+          if (!p.expirationDate) return false;
+          const expDate = new Date(p.expirationDate);
+          return expDate < today;
+        });
+      } else if (expirationFilter === 'proximos') {
+        // Productos próximos a vencer (en los próximos 3 meses)
+        list = list.filter(p => {
+          if (!p.expirationDate) return false;
+          const expDate = new Date(p.expirationDate);
+          return expDate >= today && expDate <= threeMonthsFromNow;
+        });
+      } else if (expirationFilter === 'validos') {
+        // Productos con más de 3 meses de vigencia
+        list = list.filter(p => {
+          if (!p.expirationDate) return true;
+          const expDate = new Date(p.expirationDate);
+          return expDate > threeMonthsFromNow;
+        });
+      }
+    }
+    
+    // Ordenamiento
     if (sortBy === 'nombre') list = [...list].sort((a, b) => a.name.localeCompare(b.name));
     if (sortBy === 'precio_asc') list = [...list].sort((a, b) => a.price - b.price);
     if (sortBy === 'precio_desc') list = [...list].sort((a, b) => b.price - a.price);
     if (sortBy === 'stock') list = [...list].sort((a, b) => b.stock - a.stock);
+    
     return list;
-  }, [search, selectedCategory, selectedLab, priceRange, stockFilter, sortBy]);
+  }, [products, search, selectedCategory, selectedLab, priceRange, stockFilter, sortBy, expirationFilter]);
 
   const handleAdd = (product) => {
     if (product.stock === 0) return;
-    addItem(product, product.minOrder);
+    addItem(product, product.minOrder || 1);
     setAddedId(product.id);
     setTimeout(() => setAddedId(null), 1500);
   };
@@ -76,8 +177,8 @@ export default function CatalogPage({ onNavigate }) {
     setPriceRange([0, 60000]);
     setStockFilter('todos');
     setSearch('');
+    setExpirationFilter('todos');
   };
-
 
   const sidebarProps = {
     search, setSearch,
@@ -85,7 +186,10 @@ export default function CatalogPage({ onNavigate }) {
     selectedLab, setSelectedLab,
     priceRange, setPriceRange,
     stockFilter, setStockFilter,
+    expirationFilter, setExpirationFilter,
     onReset: resetFilters,
+    categories,
+    labs,
   };
 
   return (
@@ -147,8 +251,19 @@ export default function CatalogPage({ onNavigate }) {
             </button>
           </div>
 
-          {/* Grid */}
-          {filtered.length === 0 ? (
+          {/* Loading / Error / Grid */}
+          {loading ? (
+            <div className="text-center py-24">
+              <div className="inline-block w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
+              <p className="text-teal-400/40 mt-4">Cargando productos...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-24 text-red-400/60">
+              <p className="text-4xl mb-3">⚠️</p>
+              <p className="text-lg">{error}</p>
+              <button onClick={() => window.location.reload()} className="mt-4 text-teal-400 underline text-sm">Reintentar</button>
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="text-center py-24 text-teal-400/40">
               <p className="text-4xl mb-3">🔍</p>
               <p className="text-lg">No se encontraron productos</p>
@@ -178,7 +293,7 @@ export default function CatalogPage({ onNavigate }) {
                       <span className="text-xs text-teal-400/60 bg-teal-500/10 px-2 py-0.5 rounded-full">{product.category}</span>
                       <span className="text-xs text-teal-400/50">{product.lab}</span>
                     </div>
-                    <p className="text-xs text-teal-100/35 mt-1">Pedido mínimo: {product.minOrder} unid.</p>
+                    <p className="text-xs text-teal-100/35 mt-1">Pedido mínimo: {product.minOrder || 1} unid.</p>
                   </div>
 
                   <div className="mt-4 flex items-center justify-between">

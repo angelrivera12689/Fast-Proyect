@@ -34,9 +34,9 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id", foreignKey = @ForeignKey(name = "fk_product_category"))
-    @JsonIgnore
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Category category;
     
     @Column(nullable = false)
@@ -62,8 +62,10 @@ public class Product {
     private String dimensions;
     
     // ===== Atributos de Medicamentos =====
-    @Column(name = "laboratory")
-    private String laboratory;  // Laboratorio farmacéutico
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "laboratory_id", foreignKey = @ForeignKey(name = "fk_product_laboratory"))
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Laboratory laboratory;  // Laboratorio farmacéutico
     
     @Column(name = "registration_number")
     private String registrationNumber;  // Registro INVIMA

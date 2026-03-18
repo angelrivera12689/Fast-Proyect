@@ -1,5 +1,10 @@
 export default function ProductCard({ name, price, onNavigate, delay = 0 }) {
   const nav = onNavigate || (() => {});
+  
+  // Formatear precio si es número
+  const formattedPrice = typeof price === 'number' 
+    ? price.toLocaleString('es-CO')
+    : price;
   return (
     <div
       className="group relative bg-gradient-to-br from-[#0d2137] to-[#071525] border border-teal-500/15 rounded-2xl p-5 flex flex-col items-center gap-3 cursor-pointer hover:border-teal-400/40 hover:shadow-[0_0_30px_rgba(20,184,166,0.15)] transition-all duration-500"
@@ -39,7 +44,7 @@ export default function ProductCard({ name, price, onNavigate, delay = 0 }) {
  
       <div className="text-center z-10">
         <p className="text-teal-100/80 text-sm font-light tracking-wide">{name}</p>
-        <p className="text-teal-300 font-semibold mt-1 font-['Cormorant_Garamond',serif] text-lg">${price}</p>
+        <p className="text-teal-300 font-semibold mt-1 font-['Cormorant_Garamond',serif] text-lg">${formattedPrice}</p>
       </div>
  
       <button onClick={() => nav('catalog')} className="z-10 w-full mt-1 py-2 text-xs tracking-widest uppercase text-teal-400 border border-teal-500/30 rounded-full opacity-0 group-hover:opacity-100 hover:bg-teal-500/10 transition-all duration-300">
